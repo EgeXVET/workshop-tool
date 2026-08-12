@@ -211,7 +211,7 @@ function renderFieldMetric(result) {
   const treatment = fieldValue(result.treatment_value, result.unit);
   let values = '';
   if (control && treatment) {
-    values = `<div class="fe-values"><b>${control}</b><span class="fe-arrow">?</span><b>${treatment}</b></div>`;
+    values = `<div class="fe-values"><b>${control}</b><span class="fe-arrow">&rarr;</span><b>${treatment}</b></div>`;
   } else if (treatment) {
     values = `<div class="fe-values"><b>${treatment}</b></div>`;
   } else if (control) {
@@ -280,7 +280,7 @@ function fieldHighlight(trial) {
   return `<div class="fe-highlight">
     <div>
       <div class="fe-overline">Field Experience</div>
-      <div class="fe-highlight-context">${fieldEscape(trial.display_product)} ? ${fieldEscape(trial.country)}${trial.year ? ` ? ${fieldEscape(trial.year)}` : ''}</div>
+      <div class="fe-highlight-context">${fieldEscape(trial.display_product)} | ${fieldEscape(trial.country)}${trial.year ? ` | ${fieldEscape(trial.year)}` : ''}</div>
     </div>
     <div class="fe-highlight-result">
       <b>${fieldEscape(value)}</b>

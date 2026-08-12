@@ -67,8 +67,9 @@ p{line-height:1.62;color:var(--muted);margin:0 0 10px}
 a{color:var(--xg)}
 
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 4px 16px rgba(0,60,25,.035)}
-.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:20px}
-.sticky{position:sticky;top:76px;align-self:start}
+.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:20px;align-items:start}
+.sticky{position:sticky;top:78px;align-self:start}
+.profile.sticky{top:12px;z-index:20;height:max-content}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -147,12 +148,26 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 .splittotal.ok{color:var(--xg)}
 
 /* ---------- profile ---------- */
-.profile{background:linear-gradient(170deg,var(--xg-d),#0B7A3C);color:#fff;border-radius:20px;padding:22px}
+.profile{position:relative;background:linear-gradient(170deg,var(--xg-d),#0B7A3C);color:#fff;border-radius:20px;padding:22px}
 .profile p{color:#CFE6D7}
 .profile-title{font-size:24px;font-weight:700;letter-spacing:-.02em}
 .profile-row{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.13);font-size:13px}
 .profile-row span:first-child{color:#A9CCB6;flex:0 0 auto}
 .profile-row span:last-child{text-align:right;font-weight:600}
+.profile-copy-icon{position:absolute;top:18px;right:18px;display:grid;place-items:center;width:28px;height:28px;
+  padding:0;border:0;background:transparent;color:#B7E89A;box-shadow:none}
+.profile-copy-icon:hover{color:#fff}
+.profile-copy-icon svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8}
+.profile-copy-icon:after{content:attr(data-tooltip);position:absolute;z-index:20;right:0;top:calc(100% + 8px);
+  width:max-content;padding:6px 9px;border-radius:7px;background:#fff;color:var(--xg-d);font-size:11px;
+  font-weight:600;line-height:1;opacity:0;pointer-events:none;transform:translateY(-3px);transition:.15s}
+.profile-copy-icon:hover:after,.profile-copy-icon:focus-visible:after{opacity:1;transform:translateY(0)}
+.profile-notes{margin-top:14px}
+.profile-notes label{margin:0 0 6px;color:#B7E89A}
+.profile-notes textarea{min-height:88px;resize:vertical;border-color:#B7E89A;background:transparent;
+  color:#fff;font-size:12.5px;line-height:1.5}
+.profile-notes textarea::placeholder{color:#A9CCB6}
+.profile-notes textarea:focus{border-color:#D5F1C4;box-shadow:0 0 0 3px rgba(183,232,154,.16)}
 
 /* ---------- market ---------- */
 .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
@@ -192,11 +207,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 
 /* stacked shortlist rows */
 .shortlist{display:grid;gap:11px;margin-top:16px}
-.shortrow{display:grid;grid-template-columns:52px 1fr auto;gap:16px;align-items:center;
-  padding:16px 18px;border:1px solid var(--line);border-radius:15px;background:#fff}
-.shortrow .rk{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;
-  background:var(--xg);color:#fff;font-weight:700;font-size:15px}
-.shortrow.FEED .rk{background:var(--or)}
+.shortrow{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;
+  padding:14px 18px 14px 14px;border:1px solid var(--line);border-radius:15px;background:#fff}
+.shortrow .thumb{width:64px;height:64px;border-radius:12px;background:#E7EDE8;flex:0 0 auto;
+  display:block;overflow:hidden;position:relative}
+.shortrow .thumb img{display:block;width:100%;height:100%;object-fit:cover}
+.shortrow .thumb::after{content:"";position:absolute;inset:0;border-radius:12px}
+.shortrow.HEALTH .thumb::after{background:rgba(140,163,107,.65)}
+.shortrow.FEED .thumb::after{background:rgba(242,90,34,.65)}
+.shortrow.FARM .thumb::after{background:rgba(80,150,179,.65)}
 .shortrow .nm{font-size:17px;font-weight:600;letter-spacing:-.01em}
 .shortrow .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
 .shortrow .rz{font-size:12px;color:#41544A;margin-top:6px;line-height:1.45}
@@ -233,6 +252,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 /* XVET company screen */
 .xvsplit{display:grid;grid-template-columns:1.35fr .85fr;gap:22px;align-items:start;margin-top:18px}
 .xvleft{min-width:0}
+.xvtrust{display:block;width:min(300px,78%);height:auto;margin:0 auto;border-radius:12px}
 .xvright{position:sticky;top:78px;display:grid;gap:14px}
 .xvhero{width:100%;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#fff}
 .xvhero img{display:block;width:100%;height:auto}
@@ -243,6 +263,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 .xvsupport{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
 .xvsupport .sumcard.compact{padding:12px 14px}
 .xvsupport .sumcard.compact h4{margin:8px 0 0;font-size:15px;line-height:1.25}
+.xvvoices{margin-top:18px;padding:18px 20px;border:1px solid #D2E3D6;border-radius:16px;background:var(--soft)}
+.xvvoices-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.xvvoice{background:#fff;border:1px solid #E2E9E3;border-radius:14px;padding:16px 14px;text-align:center;
+  box-shadow:0 6px 18px rgba(0,60,25,.05)}
+.xvvoice p{margin:0;font-size:13.5px;line-height:1.45;font-style:italic;color:var(--ink)}
+.xvvoice cite{display:block;margin-top:10px;font-style:normal;font-size:12px;font-weight:700;color:var(--xg)}
 .xvrating{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fff}
 .xvrating .bar{grid-template-columns:1fr auto;gap:6px 10px}
 .xvrating .bar .track{grid-column:1 / -1}
@@ -293,6 +319,19 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 .fieldexp-pill.muted{background:#F1F3F1;color:var(--muted);border-color:var(--line);font-weight:500}
 .fieldexp-quote{margin:0;font-size:14px;line-height:1.55;color:var(--ink)}
 .fieldexp-foot{margin:12px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+
+/* Feed-relevant crop production */
+.cropsec{margin-top:0;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.cropsec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.cropsec-head h4{margin:0 0 4px}
+.cropinfo{position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;
+  border-radius:50%;border:1px solid var(--line);font-size:11px;font-weight:700;color:var(--muted);cursor:help;margin-left:6px;vertical-align:middle}
+.cropinfo:hover .cropinfo-tip,.cropinfo:focus .cropinfo-tip{display:block}
+.cropinfo-tip{display:none;position:absolute;left:0;top:calc(100% + 8px);z-index:20;width:min(340px,70vw);
+  padding:10px 12px;border-radius:10px;background:#14321F;color:#fff;font-size:12px;font-weight:500;line-height:1.45;
+  box-shadow:0 10px 24px rgba(0,60,25,.2)}
+.cropsec .bars{margin-top:0}
+.cropsec .bar{grid-template-columns:90px 1fr 88px}
 
 /* Visible proof at top of each product: 1 big result + 1 testimonial */
 .prodproof{padding:0 22px 4px}
@@ -380,11 +419,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 .optcard p{margin:0;font-size:12px;line-height:1.5}
 .optcard.on p{color:#CFE6D7}
 
-.supgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.supgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
 .supcard{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden;display:flex;flex-direction:column}
 .supcard .sh{padding:16px 18px;background:var(--xg);color:#fff}
 .supcard:nth-child(2) .sh{background:var(--xg-l)}
 .supcard:nth-child(3) .sh{background:var(--or)}
+.supcard:nth-child(4) .sh{background:var(--xg-d)}
 .supcard .sh h4{margin:0;color:#fff;font-size:16px}
 .supcard .sh .small{color:rgba(255,255,255,.82);display:block;margin-top:2px}
 .supcard .sb{padding:16px 18px}
@@ -484,7 +524,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
   .statgrid{grid-template-columns:repeat(2,1fr)}
   .moregrid{grid-template-columns:repeat(2,1fr)}
   .optgrid{grid-template-columns:repeat(2,1fr)}
-  .xvgrid,.xvsupport{grid-template-columns:repeat(2,1fr)}
+  .xvgrid,.xvsupport,.xvvoices-grid{grid-template-columns:repeat(2,1fr)}
   .xvsplit{grid-template-columns:1fr}
   .xvright{position:static}
   .supgrid{grid-template-columns:1fr}
@@ -494,9 +534,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
   .hero,.layout,.prodhead,.prodbody,.grid2,.grid3{grid-template-columns:1fr}
   .agenda{grid-template-columns:1fr 1fr}
   .optgrid{grid-template-columns:1fr}
-  .xvgrid,.xvsupport{grid-template-columns:1fr}
+  .xvgrid,.xvsupport,.xvvoices-grid{grid-template-columns:1fr}
   .supgrid{grid-template-columns:1fr}
-  .shortrow{grid-template-columns:44px 1fr}
+  .shortrow{grid-template-columns:auto 1fr}
   .shortrow .rt{grid-column:2;align-items:flex-start}
   .navsteps{display:none}
   .sticky{position:static}
@@ -647,7 +687,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
           supported by field results, technical documentation and marketing support for the distributor.</p>
         <div class="trustgrid">
           <div class="trust"><b>2002</b>Founded in Hamburg</div>
-          <div class="trust"><b>50+</b>Countries worldwide</div>
+          <div class="trust"><b>55+</b>Countries worldwide</div>
           <div class="trust"><b>4.79</b>Quality satisfaction / 5</div>
           <div class="trust"><b>DE</b>Made in Germany</div>
         </div>
@@ -670,13 +710,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
         <div class="xvleft">
           <h3>Our promise</h3>
           <p>XVET Germany is a German supplier of non-pharmaceutical feed and water additive solutions, with over
-            20 years of experience and exports to around 50 countries. We offer practical, preventive products that
+            20 years of experience and exports to over 55 countries. We offer practical, preventive products that
             support animal performance, and we work through long-term distributor partnerships. Our products are made
             in Germany, GMP+ certified, and supported with the necessary export and free sale documentation.</p>
 
           <div class="xvgrid" style="margin-top:18px">
             <div class="xvfact"><b>2002</b><span>Founded in Hamburg, Germany. Over two decades supporting efficient, sustainable farming.</span></div>
-            <div class="xvfact"><b>50+</b><span>Countries on export today &mdash; global reach with a Made-in-Germany quality promise.</span></div>
+            <div class="xvfact"><b>55+</b><span>Countries on export today &mdash; global reach with a Made-in-Germany quality promise.</span></div>
             <div class="xvfact"><b>250+</b><span>Product registrations completed worldwide for partners who need market access.</span></div>
             <div class="xvfact"><b>50+</b><span>International field and university trials proving product efficiency in real conditions.</span></div>
           </div>
@@ -691,7 +731,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
               <h4>Science in the Field</h4>
             </div>
             <div class="sumcard compact">
-              <span class="badge or">Quality promise</span>
+              <span class="badge">Quality promise</span>
               <h4>Made in Germany</h4>
             </div>
             <div class="sumcard compact">
@@ -703,25 +743,29 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
               <h4>Application &amp; training</h4>
             </div>
             <div class="sumcard compact">
-              <span class="badge or">Marketing</span>
+              <span class="badge">Marketing</span>
               <h4>Support after market launch</h4>
             </div>
           </div>
 
-          <div style="margin-top:18px;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(160deg,#F6FBF7,#fff)">
-            <div class="eyebrow" style="margin-bottom:10px">Partner voices</div>
-            <div class="grid2">
-              <div class="quote" style="margin:0">
-                &ldquo;Turbo Fluid and Probiodrink reduced the mortality considerably by 80%.&rdquo;
-                <cite>Moldova</cite>
-              </div>
-              <div class="quote" style="margin:0">
-                &ldquo;Quality from XVET is always supreme.&rdquo;
+          <div class="xvvoices">
+            <div class="eyebrow" style="margin-bottom:12px">Partner voices</div>
+            <div class="xvvoices-grid">
+              <div class="xvvoice">
+                <p>&ldquo;Quality from XVET is always supreme&rdquo;</p>
                 <cite>Taiwan</cite>
               </div>
-              <div class="quote" style="margin:0">
-                &ldquo;Cal D Phos helps our customers deal with lameness in broilers.&rdquo;
-                <cite>Thailand</cite>
+              <div class="xvvoice">
+                <p>&ldquo;Turbo Fluid and Probiodrink reduced the mortality considerably by 80%&rdquo;</p>
+                <cite>Moldova</cite>
+              </div>
+              <div class="xvvoice">
+                <p>&ldquo;High quality and good feedback from market&rdquo;</p>
+                <cite>Poland</cite>
+              </div>
+              <div class="xvvoice">
+                <p>&ldquo;Zincotin give a positive boost to the group of chicks&rdquo;</p>
+                <cite>Portugal</cite>
               </div>
             </div>
           </div>
@@ -743,6 +787,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
           <div class="xvhero">
             <img src="assets/xvet-additives-for-winners.png" alt="XVET — Feed &amp; drinking water additives for winners">
           </div>
+          <img class="xvtrust" src="assets/trust-indicators.png" alt="Over 20 years, GMP+ certified, made in Germany">
 
           <div class="xvrating">
             <h3 style="margin:0 0 6px;font-size:18px">How partners rate XVET</h3>
@@ -751,7 +796,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
               <div class="bar"><span>Quality</span><span class="track"><span class="fill" style="width:96%"></span></span><span class="num">4.79 / 5</span></div>
               <div class="bar"><span>Technical support</span><span class="track"><span class="fill" style="width:92%"></span></span><span class="num">4.58 / 5</span></div>
               <div class="bar"><span>Logistics</span><span class="track"><span class="fill" style="width:91%"></span></span><span class="num">4.54 / 5</span></div>
-              <div class="bar"><span>Marketing support</span><span class="track"><span class="fill" style="width:84%;background:var(--or)"></span></span><span class="num">4.19 / 5</span></div>
+              <div class="bar"><span>Marketing support</span><span class="track"><span class="fill" style="width:84%"></span></span><span class="num">4.19 / 5</span></div>
             </div>
             <p class="small" style="margin-top:10px">Marketing support is the lowest of the four &mdash; and the area
               being rebuilt right now. That is part of why this workshop exists.</p>
@@ -811,6 +856,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
               <button class="chip">France</button><button class="chip">Spain</button>
               <button class="chip">Turkey</button><button class="chip">China</button>
               <button class="chip">India</button><button class="chip">Local production</button>
+              <button class="chip" data-other="originsOtherWrap">Other</button>
+            </div>
+            <div id="originsOtherWrap" style="display:none;margin-top:10px">
+              <label>Other origin</label>
+              <input id="originsOther" placeholder="e.g. Belgium, Brazil, USA…" oninput="syncProfile()">
             </div>
             <label>Key brands / suppliers</label>
             <input id="brands" placeholder="Which suppliers are they comparing us against?" oninput="syncProfile()">
@@ -873,6 +923,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
       </div>
 
       <aside class="profile sticky">
+        <button class="profile-copy-icon" id="copyProfileBtn" type="button" onclick="copyCustomerProfile()"
+          aria-label="Copy profile" data-tooltip="Copy profile">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="8" y="8" width="11" height="11" rx="2"></rect>
+            <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path>
+          </svg>
+        </button>
         <div class="eyebrow" style="color:#B7E89A">Live customer profile</div>
         <div class="profile-title" id="pCompany">Your Company</div>
         <p class="small" style="color:#A9CCB6">Updates live during the conversation.</p>
@@ -887,6 +944,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
           <div class="profile-row"><span>Formats</span><span id="pFormats">&mdash;</span></div>
           <div class="profile-row" style="border-bottom:none"><span>Problems</span><span id="pChallenges">&mdash;</span></div>
         </div>
+        <div class="profile-notes">
+          <label for="profileComments">Workshop notes</label>
+          <textarea id="profileComments" placeholder="Add comments here"></textarea>
+        </div>
       </aside>
     </div>
   </section>
@@ -898,7 +959,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
         <div>
           <div class="eyebrow">Step 3</div>
           <h2>Market snapshot &mdash; <span id="mkTitle" style="color:var(--xg)">&mdash;</span></h2>
-          <p>Livestock population data for this market, from FAOSTAT.</p>
+          <p>Livestock and feed-relevant crop production for this market, from FAOSTAT.</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <span class="badge grey" id="dataBadge">FAOSTAT</span>
@@ -931,10 +992,21 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
       </div>
 
       <div class="grid2" style="margin-top:20px;align-items:start">
-        <div>
-          <h4>Species weight in this market</h4>
-          <p class="small">Relative size of each livestock sector &mdash; where the volume potential sits.</p>
-          <div class="bars" id="mkBars"></div>
+        <div class="cropsec" id="cropSec">
+          <div class="cropsec-head">
+            <div>
+              <div class="eyebrow">Feed raw materials</div>
+              <h4>Feed-Relevant Crop Production
+                <span class="cropinfo" tabindex="0" aria-label="About this section">i
+                  <span class="cropinfo-tip">Shows domestic production of major crops commonly used as feed raw materials. These figures represent agricultural crop production, not manufactured compound-feed production.</span>
+                </span>
+              </h4>
+              <p class="small" style="margin:0">Domestic production of major feed raw materials</p>
+            </div>
+            <span class="badge grey" id="cropBadge">FAOSTAT</span>
+          </div>
+          <div class="bars" id="cropBars"></div>
+          <p class="small" id="cropEmpty" style="display:none;margin:8px 0 0">No feed-relevant crop production data available for this country in the selected FAOSTAT dataset.</p>
         </div>
         <div>
           <h4>Matched against the business profile</h4>
@@ -1022,6 +1094,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
       <p>What was selected today for <span id="sumCompany" style="font-weight:600;color:var(--ink)">the customer</span>
         in <span id="sumCountry" style="font-weight:600;color:var(--ink)">the market</span>.</p>
       <div class="sumgrid" id="sumGrid"></div>
+      <div class="sumcard" id="sumNotesCard" style="margin-top:14px;display:none">
+        <div class="eyebrow">Workshop notes</div>
+        <p id="sumNotes" style="margin:8px 0 0;white-space:pre-wrap;color:var(--ink)"></p>
+      </div>
     </div>
 
     <div class="panel" style="margin-top:18px">
@@ -1066,11 +1142,21 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 
       <div style="margin-top:26px">
         <div class="eyebrow">Included in the partnership</div>
-        <h2 style="font-size:28px">What XVET puts behind the products</h2>
+        <h2 style="font-size:28px">We are here to support you</h2>
         <p style="max-width:720px">The product is the starting point. What decides whether it sells in the market is
           the support around it &mdash; and that support is part of the agreement, at no additional cost.</p>
 
         <div class="supgrid">
+          <div class="supcard">
+            <div class="sh"><h4>Launch support</h4><span class="small">A stronger market start</span></div>
+            <div class="sb"><ul>
+              <li>&euro;100 FOC support with the first FCL</li>
+              <li>Launch plan and product prioritisation</li>
+              <li>Sales-team onboarding before market entry</li>
+              <li>Initial campaign and customer meeting support</li>
+              <li>Launch review after the first market feedback</li>
+            </ul></div>
+          </div>
           <div class="supcard">
             <div class="sh"><h4>Marketing support</h4><span class="small">Material to sell with</span></div>
             <div class="sb"><ul>
@@ -1118,69 +1204,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 <script>
 /* =======================================================================
    XVET STRATEGY MEETING TOOL
-   Product data: xvetgermany.com/product (first 20 of the range)
+   Product data: xvetgermany.com/product (active workshop range)
    Sales arguments: XVET product brochures + product pages
    ======================================================================= */
 
 const IMG = 'https://xvetgermany.com/_astro/';
 
 const PRODUCTS = [
-{
-  id:'42-degree', name:'42 Degree', group:'HEALTH', form:'Liquid', tagline:'Problem solved',
-  solutions:['Quick Recovery','Heat Stress'], species:['b','l','r','s'],
-  img:IMG+'42-Degree.DrCq6WhB_WOML.png',
-  ch:['Heat stress','Mortality','Vaccine reaction','FCR / weight gain'],
-  feature:'A botanical support in cases of infection, elevated body temperature and stress. Plant extracts rich in phenolic compounds such as salicylates help to regulate body temperature and relieve pain or discomfort, improving general well-being and motility. Electrolytes support proper hydration.',
-  benefits:['Helps to fight causes and symptoms of dehydration and increased body temperature','Supply of additional electrolytes','Helps to suppress negative vaccination reactions','Supports in case of pain and discomfort','Helps to stimulate appetite, metabolism and digestion','Helping to reduce inflammation'],
-  pack:'250 ml, 500 ml and 1 l bottle, 5 l and 25 l canister',
-  args:[
-   'Heat-stress periods, vaccination reactions and febrile conditions are covered by one product — so you do not need separate solutions for each situation.',
-   'Botanical salicylates plus electrolytes give a clearer response than plain electrolyte powders alone.',
-   'When temperatures rise or vaccination pressure hits, you already have a ready programme in the water line.'
-  ]
-},
-{
-  id:'aromax', name:'Aromax\u00AE', group:'HEALTH', form:'Liquid', tagline:'A puff of fresh and healthy air',
-  solutions:['Respiratory System Support'], species:['b','l','r','s'],
-  img:IMG+'aromax.DCA82ul9_Z1zwIH9.png',
-  ch:['Respiratory pressure','Vaccine reaction','Heat stress','Mortality','FCR / weight gain'],
-  feature:'A rich synergic combination of essential oils from eucalyptus, thyme and peppermint, known to alleviate respiratory tract disturbances and to have appetizing, bioactive and insect repellent effects. Added L-Menthol has anti-pruritic, decongestant and cooling properties.',
-  benefits:['Relieves respiratory problems','Helps to decrease respiratory reactions after vaccinations','Gives extra comfort to livestock in cases of heat stress','Improves oxygen intake and helps to support thermoregulation','Enhances water and feed intake','Helps to improve weight gain and feed conversion ratio'],
-  pack:'250 ml, 500 ml and 1 l bottle, 5 l and 25 l canister',
-  args:[
-   'Farms typically see a visible response within one to two days — so you can judge the result quickly on your own birds.',
-   'Two application routes — drinking water and spray — give flexibility within the same cycle.',
-   'Documented field use across Iraq, Iran, the Philippines, Thailand, Sudan and Greece gives local proof, not only a leaflet.'
-  ]
-},
-{
-  id:'cal-d-phos', name:'Cal D Phos\u00AE', group:'FARM', form:'Liquid', tagline:'Legs & Eggs',
-  solutions:['Strong Bones','Eggshell Quality'], species:['b','l'],
-  img:IMG+'CalDPhos.C-mV82E5_2iFTzM.png',
-  ch:['Eggshell quality','Egg performance','Leg problems','Mortality'],
-  feature:'Supports an optimum Calcium and Phosphorus balance and provides Vitamin D3, necessary for absorption, metabolism and mobilization of minerals. Deficiencies are avoided efficiently and quickly, maintaining health and performance. Also lowers the pH of drinking water.',
-  benefits:['Supports skeletal integrity','Helps to reduce leg problems','Improves flock uniformity','Support of laying performance','Helps to prevent losses from cage fatigue, uterus prolapse and breast blisters','Quick solution to egg shell problems'],
-  pack:'250 ml, 500 ml and 1 l bottle, 5 l and 25 l canister',
-  args:[
-   'One product covers two costly problems: leg issues and culling in heavy broilers, and shell quality and prolapse losses in layers.',
-   'Results are visible and countable on the farm — culling rate and shell thickness — so return on investment is easy to follow.',
-   'A typical programme of three to five days per month supports ongoing flock quality instead of only reacting to crises.'
-  ]
-},
-{
-  id:'metavolin-herbal', name:'Metavolin Herbal\u00AE', group:'HEALTH', form:'Liquid', tagline:'Prepare for the long run',
-  solutions:['Liver Support'], species:['b','l','r'],
-  img:IMG+'metavolin-herbal.C-eclFBz_2ckzBw.png',
-  ch:['Liver / kidney stress','Mycotoxins','Mortality','Antibiotic reduction'],
-  feature:'A balanced formulation designed to support the liver for its perfect function. The combination of hepatic factors together with two botanical extracts offers high anti-oxidant effect and promotion of liver detoxification, helping to prevent fatty liver condition.',
-  benefits:['Improving liver metabolism','Helping liver on fat mobilization','Quick recovery from hepatic conditions','Long-term hepatic protection','Supports enhanced performance'],
-  pack:'250 ml, 500 ml and 1 l bottle, 5 l and 25 l canister',
-  args:[
-   'In markets with high mycotoxin pressure and heavy antibiotic use, liver damage is a known consequence — Metavolin Herbal is built for that pressure.',
-   'It fits naturally alongside mycotoxin binders or antibiotic programmes as continuous hepatic support.',
-   'Used as long-term protection through the cycle, not only as a one-off reaction after problems appear.'
-  ]
-},
 {
   id:'renal-cleaner', name:'Renal Cleaner', group:'HEALTH', form:'Liquid', tagline:'A Good Plumber',
   solutions:['Kidney Support'], species:['b','l','r','s'],
@@ -1207,20 +1237,6 @@ const PRODUCTS = [
    'A continuous multivitamin and amino-acid support that farms rely on through the cycle, not only in crisis moments.',
    'Field experience shows farms that start with Turbo Fluid stay with it — even when cheaper alternatives are available at half the price.',
    'During use it can replace separate AD3E dosing, so the fair comparison is against two products, not one.'
-  ]
-},
-{
-  id:'turbo-grow', name:'Turbo Grow', group:'FEED', form:'Powder', tagline:'1 for all, all inside 1',
-  solutions:['Gut Health','NAGP'], species:['b','l','r','s'],
-  img:IMG+'turbo-grow.WU8uAGgq_13pMgP.png',
-  ch:['Mycotoxins','Gut health','FCR / weight gain','Antibiotic reduction','Feed storage & mould'],
-  feature:'A synergic formulation aimed at the improvement of gut health, performance and growth for all animal species. Contains inactivated yeast extract and yeast cell wall extract, organic acids and their salts, bentonite and diatomaceous earth — the most efficient bentonite against aflatoxin. Formerly known as Turbo Tox.',
-  benefits:['\u201CNon-antibiotic\u201D growth promoter','Improved feed performance','Improves weight gain, egg and meat yield','Triggers intestinal nonspecific immune modulation','Feed preservative against moulds, bacteria, vectors and mycotoxins','Better litter quality','Unique product without any carrier in it'],
-  pack:'10 kg and 25 kg craft bags',
-  args:[
-   'One product replaces a toxin binder, a growth promoter and a feed preservative — one inclusion instead of three, with a lower total cost per ton.',
-   'No carrier in the formulation: you pay for active matter only, which matters in a technical comparison against cheaper bentonite-based binders.',
-   'Trial documentation exists for broilers, layers and dairy cows across Bangladesh, Peru, Iran, the Philippines, Morocco and Sudan — local proof for similar climate zones.'
   ]
 },
 {
@@ -1308,20 +1324,6 @@ const PRODUCTS = [
   ]
 },
 {
-  id:'novovital', name:'NovoVital', group:'HEALTH', form:'Liquid', tagline:'New game, new rules',
-  solutions:['NAGP'], species:['b','l','r'],
-  img:IMG+'novovital.Z1oUGezu_Z2anV3q.jpg',
-  ch:['Gut health','Mortality','FCR / weight gain','Antibiotic reduction'],
-  feature:'A combination of monoglycerides of fatty acids C4, C8, C10 and C12. Fatty acids can interfere with the envelope of some viruses, the cell membrane of bacteria and certain protozoa that are opportunistic in the gut, helping to decrease attachment, colonization and multiplication of disease-causing agents.',
-  benefits:['Quick protection of the digestive channel starting from the crop','Decreased incidence of complications from bacterial and viral diseases','Promotion of a healthy mucosa, increased digestion and absorption','Better performance and FCR, reduced mortality'],
-  pack:'1 l bottle, 5 l and 25 l canister',
-  args:[
-   'Monoglyceride technology offers a premium gut-protection approach beyond standard acidifiers.',
-   'Used in the field together with Aromax in viral cases — a documented combination when respiratory and gut pressure arrive together.',
-   'Visible improvement is often reported within a single day, so you can assess the response quickly on farm.'
-  ]
-},
-{
   id:'smooth-pro', name:'Smooth Pro', group:'FARM', form:'Liquid', tagline:'Naturally calming',
   solutions:['Carcass Quality'], species:['b','r','s'],
   img:IMG+'smooth-pro.Vt06tulr_Z2d3l9v.png',
@@ -1391,6 +1393,7 @@ const PRODUCTS = [
    'Trial documentation in piglets in Brazil and calves in China supports the young-animal claim across two species and two continents.'
   ]
 }
+
 ];
 </script>
 
@@ -1403,26 +1406,6 @@ const PRODUCTS = [
    promised in a meeting that cannot be sent afterwards.
    ======================================================================= */
 const PROOF = {
-'turbo-grow':{
-  brochure:'Turbo Grow product brochure (v0937901-4) \u2014 Powder, FEED, Gut Health & NAGP',
-  trials:[
-   {species:['broiler'], t:'Broilers \u2014 Bangladesh, 2016 (Tangail)', d:'42 days, control vs Turbo Grow.',
-    k:[['+5.9%','Weight gain'],['+3.9%','FCR'],['\u221276.9%','Mortality']]},
-   {species:['broiler'], t:'Broilers \u2014 Bangladesh, 2016 (Maijdee)', d:'Same protocol, second location.',
-    k:[['+4.7%','Weight gain'],['+16.8%','FCR'],['\u221262.7%','Mortality']]},
-   {species:['broiler'], t:'Broilers \u2014 Peru, 2017', d:'1,920 sexed broilers, 0\u201335 days, 1 kg/t against a commercial MOS competitor. Higher daily weight gain and better feed conversion than the competitor product.',k:[]},
-   {species:['broiler'], t:'Broilers \u2014 Iran, 2014 (university trial)', d:'Tabriz Azad University, College of Veterinary Medicine. 360 Ross 308 over six weeks. Higher Gumboro antibody titres on days 28 and 42, and lower FCR throughout.',k:[]},
-   {species:['layer'], t:'Layers \u2014 Peru, 2019', d:'3,000 Hisex Brown at 42 weeks, 12 weeks, 1 kg/t. Higher egg production, egg weight and total egg mass with better feed conversion.',
-    k:[['3.29 : 1','Return per EUR invested']]},
-   {species:['dairy-cow','cattle'], t:'Dairy cows \u2014 Morocco, 2020', d:'535 Holstein cows at 100 g/cow/day, against two market competitors. Highest average milk production of the three groups.',
-    k:[['+1.3\u20132 L','Milk per cow per day']]},
-   {species:['dairy-cow','cattle'], t:'Dairy cows \u2014 Philippines, 2016', d:'Batangas, four months, 27\u201349 milking cows at 100 g/day under tropical conditions and poor-quality roughage.',k:[]},
-   {species:['dairy-cow','cattle'], t:'Dairy cows \u2014 Sudan, 2016', d:'Low-yield lactating cows near Khartoum, 20-day observation including a four-day baseline before application.',k:[]}
-  ],
-  quotes:[
-   {species:['layer'], q:'Egg production is 4% higher than usual, and no antibiotics were used for the whole period.',a:'Mukhammad Tursunov, Uzbekistan'}
-  ]},
-
 'mould-guard-diamond':{
   brochure:'Mould Guard Diamond product brochure (v2010299-1) \u2014 Powder, FEED, Feed Quality',
   trials:[
@@ -1443,23 +1426,6 @@ const PROOF = {
   ],
   quotes:[]},
 
-'42-degree':{
-  brochure:'42 Degree P product brochure (v6005201-0) \u2014 Powder version, FEED, Quick Recovery. The brochure for the liquid version is not in the library yet.',
-  trials:[],
-  quotes:[
-   {species:['broiler','layer'], q:'We have used the 42 Degree product on our poultry farm and the results are satisfactory.',a:'Mohan Krishna, Brunei'}
-  ]},
-
-'aromax':{brochure:null,trials:[],quotes:[
-  {species:['broiler','layer'], q:'Works best when birds face respiratory problems and helps remove symptoms. It also works well in hot weather against heat stress. Birds programmed with Aromax bounce back from sickness faster.',a:'Richmond Uy, Philippines'},
-  {species:['broiler','layer'], q:'Treated animals recovered completely, and respiratory distress, runny nose and anorexia disappeared.',a:'Yasir Anwer, Sudan'},
-  {species:['broiler','layer'], q:'Used in drinking water or as a spray, especially useful before and after vaccination and in respiratory disease.',a:'Dr. Payam Khoshkhoo, Iran'}
-]},
-'cal-d-phos':{brochure:null,trials:[],quotes:[
-  {species:['broiler'], q:'It helps our customers deal with lameness in broilers, especially big males, and cut lameness culling by half.',a:'Pathawit Ngamcharoen, Thailand'},
-  {species:['layer'], q:'We will promote this product with eggshell thickness data of almost 20%.',a:'Dr. Oh Woo-Hyun, Korea'},
-  {species:['layer'], q:'Application by Dosatron pump achieved stable egg production, with better eggshell quality and egg content quality.',a:'Dr. Mahmoud M. Amayreh, Jordan'}
-]},
 'renal-cleaner':{brochure:null,trials:[],quotes:[
   {species:['broiler'], q:'Our customers use it in broilers after antibiotics or in kidney failure. Swelling reduced after three to four days and feed intake increased.',a:'Nguyen Tien Dung, Vietnam'},
   {species:['broiler','layer'], q:'Good results in renal forms of IB infection, after extensive antibiotic use and in heavy bacterial infections.',a:'Dr. Yasir Anwer, Sudan'}
@@ -1468,14 +1434,8 @@ const PROOF = {
   {species:['all'], q:'Competitors are at 50\u201360% of the price, but customers who start with Turbo Fluid do not go back to cheap products.',a:'Dr. Usama Khaled, UAE'},
   {species:['broiler'], q:'Combined with Probiodrink in turkeys, mortality was reduced considerably.',a:'Dr. Maxim Godniuc, Republic of Moldova'}
 ]},
-'novovital':{brochure:null,trials:[],quotes:[
-  {species:['broiler'], q:'Only one day after use the chickens looked much better. Overall performance increased rapidly, with better FCR and higher weight gain.',a:'Dr. Rabeea, Iraq'}
-]},
 'novosol':{brochure:null,trials:[],quotes:[
   {species:['broiler'], q:'Based on partner feedback, the main effects in broiler farms are higher final body weight and lower mortality.',a:'Tam\u00e1s Csonka, Hungary'}
-]},
-'metavolin-herbal':{brochure:null,trials:[],quotes:[
-  {species:['broiler'], q:'The flock had IBH in broilers at day 31 with high mortality. After 24 hours mortality dropped sharply.',a:'Dr. Yahia Alsumiaa, Syria'}
 ]},
 'globiotic':{brochure:null,trials:[],quotes:[
   {species:['dairy-cow','cattle'], q:'Calves have less diarrhoea, better appetite and look more active.',a:'Ms. Jovita Lionikiene, Lithuania'},
@@ -1493,6 +1453,7 @@ const PROOF = {
 <script src="field-trials.js"></script>
 
 <script src="data/faostat_embed.js"></script>
+<script src="data/faostat_crops_embed.js"></script>
 <script>
 /* =======================================================================
    MARKET DATA LAYER — FAOSTAT CSV
@@ -1506,6 +1467,7 @@ const PROOF = {
    ======================================================================= */
 
 const FAOSTAT_CSV_URL = 'data/faostat_2024.csv';
+const FAOSTAT_CROPS_CSV_URL = 'data/faostat_crops_2024.csv';
 const FAO_COUNTRY_ALIASES = {
   'Turkey': 'Türkiye',
   'Iran': 'Iran (Islamic Republic of)',
@@ -1521,11 +1483,27 @@ const FAO_COUNTRY_ALIASES = {
   'South Korea (Republic of Korea)': 'Republic of Korea'
 };
 
-let FAOSTAT_ROWS = [];          // parsed CSV rows
-let FAOSTAT_BY_COUNTRY = {};    // Area -> rows[]
+let FAOSTAT_ROWS = [];          // livestock rows
+let FAOSTAT_BY_COUNTRY = {};    // Area -> livestock rows[]
 let FAOSTAT_COUNTRIES = [];     // sorted Area names
 let FAOSTAT_LOADED = false;
 let FAOSTAT_LOAD_ERROR = null;
+
+let FAOSTAT_CROP_ROWS = [];
+let FAOSTAT_CROPS_BY_COUNTRY = {};
+let FAOSTAT_CROPS_LOADED = false;
+let FAOSTAT_CROPS_LOAD_ERROR = null;
+
+const FEED_CROP_DEFS = [
+  { key:'maize',    label:'Maize',    aliases:['maize','maize (corn)'] },
+  { key:'wheat',    label:'Wheat',    aliases:['wheat'] },
+  { key:'barley',   label:'Barley',   aliases:['barley'] },
+  { key:'sorghum',  label:'Sorghum',  aliases:['sorghum'] },
+  { key:'soybeans', label:'Soybeans', aliases:['soybeans','soybean','soya beans','soya bean'] }
+];
+
+// Reject processed / secondary items even if they contain an alias token
+const FEED_CROP_REJECT = /\b(flour|oil|bran|feed|product|products|meal|cake|green corn|sweet corn|popcorn|germ|starch|gluten|processed)\b/i;
 
 function parseCSV(text){
   const lines = String(text).replace(/^\uFEFF/, '').trim().split(/\r?\n/);
@@ -1567,29 +1545,54 @@ function indexFAOSTAT(rows){
   FAOSTAT_LOADED = true;
 }
 
+function indexFAOSTATCrops(rows){
+  FAOSTAT_CROP_ROWS = rows;
+  FAOSTAT_CROPS_BY_COUNTRY = {};
+  rows.forEach(r=>{
+    const a=r.Area; if(!a) return;
+    (FAOSTAT_CROPS_BY_COUNTRY[a]||(FAOSTAT_CROPS_BY_COUNTRY[a]=[])).push(r);
+  });
+  FAOSTAT_CROPS_LOADED = true;
+}
+
+async function loadCSVText(url, embedConst){
+  try{
+    const res = await fetch(url, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.text();
+  }catch(e){
+    if(typeof embedConst==='string' && embedConst.length) return embedConst;
+    throw e;
+  }
+}
+
 async function loadFAOSTAT(){
   FAOSTAT_LOAD_ERROR = null;
+  FAOSTAT_CROPS_LOAD_ERROR = null;
+  let ok=true;
   try{
-    const res = await fetch(FAOSTAT_CSV_URL, {cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    indexFAOSTAT(parseCSV(await res.text()));
-    return true;
+    const text = await loadCSVText(FAOSTAT_CSV_URL, typeof FAOSTAT_CSV_EMBED!=='undefined'?FAOSTAT_CSV_EMBED:null);
+    indexFAOSTAT(parseCSV(text));
   }catch(e){
-    if(typeof FAOSTAT_CSV_EMBED==='string' && FAOSTAT_CSV_EMBED.length){
-      indexFAOSTAT(parseCSV(FAOSTAT_CSV_EMBED));
-      return true;
-    }
     FAOSTAT_LOAD_ERROR = e.message||String(e);
     FAOSTAT_LOADED = false;
-    return false;
+    ok=false;
   }
+  try{
+    const text = await loadCSVText(FAOSTAT_CROPS_CSV_URL, typeof FAOSTAT_CROPS_CSV_EMBED!=='undefined'?FAOSTAT_CROPS_CSV_EMBED:null);
+    indexFAOSTATCrops(parseCSV(text));
+  }catch(e){
+    FAOSTAT_CROPS_LOAD_ERROR = e.message||String(e);
+    FAOSTAT_CROPS_LOADED = false;
+  }
+  return ok;
 }
 
 function resolveFAOCountry(name){
   if(!name) return '';
-  if(FAOSTAT_BY_COUNTRY[name]) return name;
+  if(FAOSTAT_BY_COUNTRY[name] || FAOSTAT_CROPS_BY_COUNTRY[name]) return name;
   const alias = FAO_COUNTRY_ALIASES[name];
-  if(alias && FAOSTAT_BY_COUNTRY[alias]) return alias;
+  if(alias && (FAOSTAT_BY_COUNTRY[alias] || FAOSTAT_CROPS_BY_COUNTRY[alias])) return alias;
   return name;
 }
 
@@ -1651,6 +1654,130 @@ function fmtAnimals(v){
   if(v >= 1_000_000) return (v/1_000_000).toFixed(1) + 'm';
   if(v >= 1_000)     return (v/1_000).toFixed(1) + 'k';
   return String(Math.round(v));
+}
+
+function fmtTonnes(v){
+  if(v==null || !Number.isFinite(v)) return '\u2014';
+  if(v >= 1_000_000_000) return (v/1_000_000_000).toFixed(1) + 'bn t';
+  if(v >= 1_000_000)     return (v/1_000_000).toFixed(1) + 'm t';
+  if(v >= 1_000)         return (v/1_000).toFixed(1) + 'k t';
+  return Math.round(v) + ' t';
+}
+
+function normalizeCropItemName(item){
+  return String(item||'').toLowerCase().replace(/\s+/g,' ').trim();
+}
+
+function matchFeedCropKey(itemName){
+  const n = normalizeCropItemName(itemName);
+  if(!n || FEED_CROP_REJECT.test(n)) return null;
+  for(const def of FEED_CROP_DEFS){
+    for(const alias of def.aliases){
+      if(n === alias) return def.key;
+    }
+  }
+  return null;
+}
+
+function parseTonnesValue(value, unit){
+  if(value==null || value==='') return null;
+  if(String(unit||'').toLowerCase() !== 't' && !String(unit||'').toLowerCase().includes('tonne')) return null;
+  const v = parseFloat(String(value).replace(/,/g,''));
+  return Number.isFinite(v) ? v : null;
+}
+
+function getFeedCropProduction(country){
+  const area = resolveFAOCountry(country);
+  const rows = FAOSTAT_CROPS_BY_COUNTRY[area] || [];
+  const productionRows = rows.filter(r=>
+    r.Element === 'Production' &&
+    String(r.Unit||'').toLowerCase() === 't' &&
+    r.Value !== '' &&
+    matchFeedCropKey(r.Item)
+  );
+
+  const years = productionRows.map(r=>parseInt(r.Year,10)).filter(y=>Number.isFinite(y));
+  const year = years.length ? Math.max(...years) : null;
+  const yearRows = year==null ? [] : productionRows.filter(r=>parseInt(r.Year,10)===year);
+
+  const byKey = {};
+  FEED_CROP_DEFS.forEach(d=>{ byKey[d.key] = []; });
+
+  yearRows.forEach(r=>{
+    const key = matchFeedCropKey(r.Item);
+    if(!key) return;
+    const tonnes = parseTonnesValue(r.Value, r.Unit);
+    if(tonnes==null) return;
+    const sig = `${r.Item}|${r.Value}|${r.Unit}|${r.Year}`;
+    if(!byKey[key].some(x=>x.sig===sig)) byKey[key].push({sig, tonnes, item:r.Item});
+  });
+
+  const crops = FEED_CROP_DEFS.map(def=>{
+    const hits = byKey[def.key] || [];
+    let tonnes = null;
+    if(hits.length === 1){
+      tonnes = hits[0].tonnes;
+    }else if(hits.length > 1){
+      const preferred = hits.find(h=>/^(maize \(corn\)|wheat|barley|sorghum|soya beans)$/i.test(h.item));
+      if(preferred) tonnes = preferred.tonnes;
+      else {
+        const uniqVals = [...new Set(hits.map(h=>h.tonnes))];
+        tonnes = uniqVals.length === 1 ? uniqVals[0] : hits.reduce((a,b)=>a+b.tonnes,0);
+      }
+    }
+    return { key: def.key, label: def.label, tonnes };
+  });
+
+  return { year, crops };
+}
+
+function renderFeedCropProduction(country){
+  const badge=document.getElementById('cropBadge');
+  const bars=document.getElementById('cropBars');
+  const empty=document.getElementById('cropEmpty');
+  if(!badge || !bars || !empty) return;
+
+  if(!country){
+    badge.className='badge grey';
+    badge.textContent='FAOSTAT';
+    bars.innerHTML='';
+    empty.style.display='none';
+    return;
+  }
+
+  if(!FAOSTAT_CROPS_LOADED){
+    badge.className='badge grey';
+    badge.textContent='FAOSTAT';
+    bars.innerHTML='';
+    empty.style.display='block';
+    empty.textContent = FAOSTAT_CROPS_LOAD_ERROR
+      ? `Could not load data/faostat_crops_2024.csv (${FAOSTAT_CROPS_LOAD_ERROR}).`
+      : 'No feed-relevant crop production data available for this country in the selected FAOSTAT dataset.';
+    return;
+  }
+
+  const data = getFeedCropProduction(country);
+  const hasAny = data.crops.some(c=>c.tonnes!=null);
+  badge.className = data.year ? 'badge' : 'badge grey';
+  badge.textContent = data.year ? `FAOSTAT \u00B7 ${data.year}` : 'FAOSTAT';
+
+  if(!hasAny){
+    bars.innerHTML='';
+    empty.style.display='block';
+    empty.textContent='No feed-relevant crop production data available for this country in the selected FAOSTAT dataset.';
+    return;
+  }
+
+  empty.style.display='none';
+  const max = Math.max(...data.crops.map(c=>c.tonnes||0), 0);
+  const colors = {maize:'#F2B705', wheat:'#C4A35A', barley:'#8B7355', sorghum:'#E07A2F', soybeans:'#62BB45'};
+  bars.innerHTML = data.crops.map(c=>{
+    const has = c.tonnes!=null && Number.isFinite(c.tonnes);
+    const pct = has && max>0 ? Math.max(1.5, (c.tonnes/max)*100) : 0;
+    return `<div class="bar"><span>${c.label}</span>
+      <span class="track"><span class="fill" style="width:${pct}%;background:${colors[c.key]||'var(--xg-l)'}"></span></span>
+      <span class="num">${fmtTonnes(c.tonnes)}</span></div>`;
+  }).join('');
 }
 </script>
 
@@ -1874,12 +2001,20 @@ function updateSplitTotal(){
   el.textContent=`Total: ${t}%`+(t===100?' \u2713':t>100?' — over 100%':'');
   el.className='splittotal '+(t===100?'ok':t>100?'bad':'');
 }
-function vals(g){return [...document.querySelectorAll(`[data-group="${g}"] .chip.selected`)].map(x=>x.textContent.trim())}
+function vals(g){return [...document.querySelectorAll(`[data-group="${g}"] .chip.selected`)].map(x=>x.textContent.trim()).filter(t=>t!=='Other')}
 function joined(g){return vals(g).join(', ')||'\u2014'}
 function customersText(){
   const list=vals('customers');
   const other=(document.getElementById('customersOther')?.value||'').trim();
   if(other) list.push(other);
+  return list.join(', ')||'\u2014';
+}
+function originsText(){
+  const list=vals('origins');
+  const otherChip=document.querySelector('[data-group="origins"] .chip[data-other].selected');
+  const other=(document.getElementById('originsOther')?.value||'').trim();
+  if(otherChip && other) list.push(other);
+  else if(otherChip && !other) list.push('Other');
   return list.join(', ')||'\u2014';
 }
 function speciesText(){
@@ -1890,7 +2025,21 @@ function speciesText(){
 document.addEventListener('click',e=>{
   const c=e.target.closest('.chip'); if(!c) return;
   if(!c.parentElement.dataset.group) return;
-  e.preventDefault(); c.classList.toggle('selected'); syncProfile();
+  e.preventDefault(); c.classList.toggle('selected');
+  if(c.dataset.other){
+    const wrap=document.getElementById(c.dataset.other);
+    if(wrap){
+      const on=c.classList.contains('selected');
+      wrap.style.display=on?'block':'none';
+      if(!on){
+        const input=wrap.querySelector('input');
+        if(input) input.value='';
+      }else{
+        wrap.querySelector('input')?.focus();
+      }
+    }
+  }
+  syncProfile();
 });
 function syncProfile(){
   const g=id=>document.getElementById(id);
@@ -1899,11 +2048,50 @@ function syncProfile(){
   g('pFounded').textContent=g('founded').value||'\u2014';
   g('pSales').textContent=g('sales').value||'\u2014';
   g('pPortfolio').textContent=joined('portfolio');
-  g('pOrigins').textContent=joined('origins');
+  g('pOrigins').textContent=originsText();
   g('pCustomers').textContent=customersText();
   g('pSpecies').textContent=speciesText();
   g('pFormats').textContent=joined('formats');
   g('pChallenges').textContent=joined('challenges');
+}
+
+async function copyCustomerProfile(){
+  const fields=[
+    ['Company','pCompany'],
+    ['Country','pCountry'],
+    ['Founded','pFounded'],
+    ['Contact','pSales'],
+    ['Portfolio','pPortfolio'],
+    ['Origins','pOrigins'],
+    ['Customers','pCustomers'],
+    ['Species','pSpecies'],
+    ['Formats','pFormats'],
+    ['Problems','pChallenges']
+  ];
+  const comments=document.getElementById('profileComments').value.trim()||'\u2014';
+  const text=[
+    ...fields.map(([label,id])=>`${label}: ${document.getElementById(id).textContent.trim()}`),
+    `Workshop notes: ${comments}`
+  ].join('\n');
+  const button=document.getElementById('copyProfileBtn');
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+    }else{
+      const area=document.createElement('textarea');
+      area.value=text;
+      area.style.position='fixed';
+      area.style.opacity='0';
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand('copy');
+      area.remove();
+    }
+    button.dataset.tooltip='Copied \u2713';
+  }catch(e){
+    button.dataset.tooltip='Copy failed';
+  }
+  setTimeout(()=>{button.dataset.tooltip='Copy profile'},2200);
 }
 
 /* =======================================================================
@@ -1932,7 +2120,7 @@ async function reloadFAOSTAT(){
 }
 
 async function renderMarket(){
-  if(!FAOSTAT_LOADED){
+  if(!FAOSTAT_LOADED || !FAOSTAT_CROPS_LOADED){
     await loadFAOSTAT();
     populateCountrySelects();
   }
@@ -1945,15 +2133,15 @@ async function renderMarket(){
     document.getElementById('stLayer').textContent='\u2014';
     document.getElementById('stRum').textContent='\u2014';
     document.getElementById('stSwine').textContent='\u2014';
-    document.getElementById('mkBars').innerHTML='';
     document.getElementById('dataBadge').textContent='FAOSTAT';
     document.getElementById('dataBadge').className='badge grey';
     document.getElementById('mkSpecies').textContent=speciesText();
     document.getElementById('mkFormats').textContent=joined('formats');
     document.getElementById('mkChallenges').textContent=joined('challenges');
+    renderFeedCropProduction('');
     document.getElementById('srcNote').innerHTML=FAOSTAT_LOAD_ERROR
       ? `<b>Source:</b> Could not load <code>data/faostat_2024.csv</code> (${FAOSTAT_LOAD_ERROR}).`
-      : `<b>Source:</b> FAO. FAOSTAT domain QCL via <code>data/faostat_2024.csv</code>. Select a country to load livestock figures.`;
+      : `<b>Source:</b> FAO. FAOSTAT domain QCL via <code>data/faostat_2024.csv</code> and <code>data/faostat_crops_2024.csv</code>. Select a country to load figures.`;
     return;
   }
 
@@ -1970,8 +2158,7 @@ async function renderMarket(){
     document.getElementById('stLayer').textContent='\u2014';
     document.getElementById('stRum').textContent='\u2014';
     document.getElementById('stSwine').textContent='\u2014';
-    document.getElementById('mkBars').innerHTML='';
-    document.getElementById('srcNote').innerHTML=`<b>Source:</b> No FAOSTAT rows found for <b>${c}</b> in <code>data/faostat_2024.csv</code>.`;
+    document.getElementById('srcNote').innerHTML=`<b>Source:</b> No FAOSTAT livestock rows found for <b>${c}</b> in <code>data/faostat_2024.csv</code>. Crop production (if available) is shown from <code>data/faostat_crops_2024.csv</code>.`;
   }else{
     badge.className='badge';
     badge.textContent=d.year?`FAOSTAT \u00B7 ${d.year}`:'FAOSTAT';
@@ -1980,30 +2167,17 @@ async function renderMarket(){
     document.getElementById('stRum').textContent=fmtAnimals(d.ruminants);
     document.getElementById('stSwine').textContent=fmtAnimals(d.swine);
 
-    const rows=[
-      {label:'Broilers',v:d.broiler,c:'#F15A23'},
-      {label:'Layers',v:d.layer,c:'#F2B705'},
-      {label:'Ruminants',v:d.ruminants,c:'#00672F'},
-      {label:'Swine',v:d.swine,c:'#C0417A'}
-    ];
-    const nums=rows.map(r=>r.v).filter(v=>v!=null && v>0);
-    const max=nums.length?Math.max(...nums):0;
-    document.getElementById('mkBars').innerHTML=rows.map(r=>{
-      const has=r.v!=null && Number.isFinite(r.v);
-      const pct=has && max>0 ? Math.max(1.5,(r.v/max)*100) : 0;
-      return `<div class="bar"><span>${r.label}</span>
-        <span class="track"><span class="fill" style="width:${pct}%;background:${r.c}"></span></span>
-        <span class="num">${fmtAnimals(r.v)}</span></div>`;
-    }).join('');
-
     document.getElementById('srcNote').innerHTML=
-      `<b>Source:</b> FAO. FAOSTAT, domain QCL (Crops and livestock products), year ${d.year||'\u2014'}, from <code>data/faostat_2024.csv</code>.
+      `<b>Source:</b> FAO. FAOSTAT, domain QCL (Crops and livestock products), from <code>data/faostat_2024.csv</code> and <code>data/faostat_crops_2024.csv</code>.
        Broilers = chicken meat, Producing Animals/Slaughtered (animals/year).
        Layers = hen eggs in shell, Laying (laying hens).
        Ruminants = cattle + sheep + goat stocks.
        Swine = swine/pig stocks.
+       Feed-relevant crops = Production (tonnes) for maize, wheat, barley, sorghum, soybeans.
        Missing series are shown as \u2014 and are never invented.`;
   }
+
+  renderFeedCropProduction(c);
 
   // Business-profile fields stay independent of FAOSTAT
   document.getElementById('mkSpecies').textContent=speciesText();
@@ -2015,7 +2189,7 @@ async function renderMarket(){
 <script>
 /* =======================================================================
    STEP 4 — SCORING ENGINE
-   Weights the 20-product core range against:
+   Weights the active workshop product range against:
      species split (Step 1)  ·  market size (Step 2)
      stated problems (Step 1) ·  relevant formats (Step 1)
      customer types (Step 1)  ·  products pre-selected before the meeting
@@ -2068,7 +2242,7 @@ function scoreProduct(p){
   const cu=vals('customers');
   let sCu=0;
   if(cu.includes('Feed mills')&&p.group==='FEED'){ sCu+=10; why.push('Feed mill channel'); }
-  if(cu.includes('Integrators')&&['smooth-pro','turbo-grow','mould-guard-diamond','novosol'].includes(p.id)){
+  if(cu.includes('Integrators')&&['smooth-pro','mould-guard-diamond','novosol'].includes(p.id)){
     sCu+=8; why.push('Integrator-level argument'); }
   if(cu.includes('Veterinarians')&&p.group==='HEALTH'){ sCu+=6; why.push('Veterinary channel'); }
 
@@ -2102,8 +2276,11 @@ function renderSelection(){
     const locked=state.preselect.includes(p.id);
     const sol=p.solutions.map(x=>`<span class="pill ${p.group==='FEED'?'or':''}">${x}</span>`).join('');
     const hit=(p.hits||[]).map(x=>`<span class="pill hit">${x}</span>`).join('');
+    const thumb=`<span class="thumb">
+      <img src="assets/${p.id}.png" alt="${p.name}">
+    </span>`;
     return `<div class="shortrow ${p.group}">
-      <span class="rk">${i+1}</span>
+      ${thumb}
       <div>
         <div class="nm">${p.name}</div>
         <div class="sub">${p.tagline}</div>
@@ -2320,12 +2497,16 @@ function renderSummary(){
       <p class="small" style="margin:0">${p.tagline}</p>
       <p class="small" style="margin:6px 0 0;opacity:.8">${p.group} &middot; ${p.form}</p>
     </div>`).join('') || '<p>No products selected.</p>';
+  const notes=document.getElementById('profileComments').value.trim();
+  document.getElementById('sumNotes').textContent=notes;
+  document.getElementById('sumNotesCard').style.display=notes?'block':'none';
 }
 function exportSummary(){
   const co=document.getElementById('company').value||document.getElementById('pcCompany').value||'—';
   const ct=document.getElementById('country').value||'—';
   const dt=document.getElementById('pcDate').value||'';
   const sel=selectedProducts();
+  const notes=document.getElementById('profileComments').value.trim()||'—';
   const txt=
 `XVET STRATEGY MEETING — SUMMARY
 Customer : ${co}
@@ -2337,11 +2518,14 @@ CUSTOMER PROFILE
 Founded    : ${document.getElementById('founded').value||'—'}
 Contact    : ${document.getElementById('sales').value||'—'}
 Portfolio  : ${joined('portfolio')}
-Origins    : ${joined('origins')}
+Origins    : ${originsText()}
 Customers  : ${customersText()}
 Species    : ${speciesText()}
 Formats    : ${joined('formats')}
 Problems   : ${joined('challenges')}
+
+WORKSHOP NOTES
+${notes}
 
 SELECTED PRODUCTS (${sel.length})
 ${sel.map((p,i)=>`${i+1}. ${p.name} — ${p.tagline} (${p.group}, ${p.form})${p.added?' [added on customer request]':''}
