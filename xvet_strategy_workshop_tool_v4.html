@@ -208,7 +208,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 /* stacked shortlist rows */
 .shortlist{display:grid;gap:11px;margin-top:16px}
 .shortrow{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;
-  padding:14px 18px 14px 14px;border:1px solid var(--line);border-radius:15px;background:#fff}
+  padding:14px 18px 14px 14px;border:1px solid var(--line);border-radius:15px;background:#fff;overflow:visible}
 .shortrow .thumb{width:64px;height:64px;border-radius:12px;background:#E7EDE8;flex:0 0 auto;
   display:block;overflow:hidden;position:relative}
 .shortrow .thumb img{display:block;width:100%;height:100%;object-fit:cover}
@@ -440,22 +440,19 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 
 /* ---------- product presentation ---------- */
 .prodblock{border:1px solid var(--line);border-radius:20px;background:#fff;overflow:hidden;margin-bottom:18px;scroll-margin-top:80px}
-.prodhead{display:grid;grid-template-columns:190px 1fr;gap:20px;padding:22px;background:linear-gradient(140deg,#F7FBF7,#fff)}
+.prodhead{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;padding:22px;background:linear-gradient(140deg,#F7FBF7,#fff)}
 .prodhead.FEED{background:linear-gradient(140deg,#FFF6F2,#fff)}
-.prodimg{border-radius:14px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;padding:10px;min-height:150px}
-.prodimg img{max-width:100%;max-height:150px;object-fit:contain;display:none}
-.prodimg{position:relative;padding:0;overflow:hidden;border:none}
-.prodfallback{width:100%;min-height:150px;border-radius:14px;display:flex;flex-direction:column;
-  justify-content:space-between;padding:16px;background:var(--xg);color:#fff}
-.prodfallback.FEED{background:var(--or)}
-.prodfallback.FARM{background:var(--xg-l)}
-.prodfallback .pn{font-size:21px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
-.prodfallback .pf{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.9}
-.prodfallback .pl{font-size:15px;font-weight:800;letter-spacing:-.02em}
-.prodfallback .pl b{font-weight:800}
+.prodimg{width:112px;height:112px;border-radius:14px;background:#E7EDE8;flex:0 0 auto;
+  display:block;overflow:hidden;position:relative;align-self:start}
+.prodimg img{display:block;width:100%;height:100%;object-fit:cover}
+.prodimg::after{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none}
+.prodhead.HEALTH .prodimg::after{background:rgba(140,163,107,.65)}
+.prodhead.FEED .prodimg::after{background:rgba(242,90,34,.65)}
+.prodhead.FARM .prodimg::after{background:rgba(80,150,179,.65)}
 .prodname{font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1.05;margin:6px 0 4px}
 .prodname-wrap{position:relative;display:inline-block;max-width:100%}
-.prodname-wrap .prodname{margin:0;cursor:help;border-bottom:1px dotted rgba(0,103,47,.35)}
+.prodname-wrap .prodname,
+.prodname-wrap .nm{margin:0;cursor:help;border-bottom:1px dotted rgba(0,103,47,.35)}
 .prodname-tip{
   display:none;position:absolute;left:0;top:calc(100% + 8px);z-index:30;width:min(520px,70vw);
   padding:12px 14px;border-radius:12px;background:#14321F;color:#fff;font-size:13px;font-weight:500;
@@ -902,17 +899,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
         <div class="question">
           <div class="qhead"><span><span class="n">7</span>What problems are their customers facing?</span><span>&#8963;</span></div>
           <div class="qbody">
-            <div class="chips" data-group="challenges">
-              <button class="chip">Respiratory pressure</button><button class="chip">Mortality</button>
-              <button class="chip">Heat stress</button><button class="chip">FCR / weight gain</button>
-              <button class="chip">Gut health</button><button class="chip">Vaccine reaction</button>
-              <button class="chip">Egg performance</button><button class="chip">Eggshell quality</button>
-              <button class="chip">Mycotoxins</button><button class="chip">Feed storage &amp; mould</button>
-              <button class="chip">Leg problems</button><button class="chip">Liver / kidney stress</button>
-              <button class="chip">Antibiotic reduction</button><button class="chip">Calf / piglet start</button>
-              <button class="chip">Water quality</button><button class="chip">Carcass quality</button>
-              <button class="chip">Milk yield</button>
-            </div>
+            <div class="chips" data-group="challenges" id="challengeChips"></div>
           </div>
         </div>
 
@@ -1201,201 +1188,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
   </section>
 </div>
 
-<script>
-/* =======================================================================
-   XVET STRATEGY MEETING TOOL
-   Product data: xvetgermany.com/product (active workshop range)
-   Sales arguments: XVET product brochures + product pages
-   ======================================================================= */
-
-const IMG = 'https://xvetgermany.com/_astro/';
-
-const PRODUCTS = [
-{
-  id:'renal-cleaner', name:'Renal Cleaner', group:'HEALTH', form:'Liquid', tagline:'A Good Plumber',
-  solutions:['Kidney Support'], species:['b','l','r','s'],
-  img:IMG+'renal-cleaner.DqGqlile_1kNsUS.png',
-  ch:['Liver / kidney stress','Antibiotic reduction','Mycotoxins','Mortality'],
-  feature:'Especially designed to help animals cope with negative consequences of renal disorders. Used preventively with high protein diets, at first symptoms of renal problems, with high risk of mycotoxin contamination of feedstuffs, or after repetitive use of antibiotics and other kidney-damaging medications.',
-  benefits:['Quick and specific problem solver','Replenishes energy and electrolytes','Support of kidney activities','Cost-efficient solution'],
-  pack:'250 ml, 500 ml and 1 l bottle, 5 l and 25 l canister',
-  args:[
-   'A focused kidney support with a short, visible response window — field reports describe reduced kidney swelling and recovering feed intake within three to four days.',
-   'Especially useful after antibiotic treatments and during infectious bronchitis pressure, when kidneys are under extra load.',
-   'Low cost per treated litre of water keeps it practical to use whenever renal support is needed.'
-  ]
-},
-{
-  id:'turbo-fluid', name:'Turbo Fluid', group:'FARM', form:'Liquid', tagline:'All-in-one formula',
-  solutions:['Vitamin/Mineral/Amino Acids','Heat Stress'], species:['b','l','r'],
-  img:IMG+'turbo-fluid.LNDmp_N7_BsYjP.png',
-  ch:['Heat stress','FCR / weight gain','Mortality','Egg performance'],
-  feature:'A vitamin and amino acid rich composition designed to promote resistance to infections and provide health, growth and fertility. Treated livestock are less sensitive to stress from heat or overcrowded housing, and the appetite remains unaffected, keeping up production parameters.',
-  benefits:['Prevention of nutritional deficiencies and of their consequences','Provides necessary elements for cell formation and metabolism','Helps to maintain production parameters, appetite and growth in case of diseases','Replaces losses caused by stress factors'],
-  pack:'250 ml, 500 ml and 1 l bottle, 5 l and 25 l canister',
-  args:[
-   'A continuous multivitamin and amino-acid support that farms rely on through the cycle, not only in crisis moments.',
-   'Field experience shows farms that start with Turbo Fluid stay with it — even when cheaper alternatives are available at half the price.',
-   'During use it can replace separate AD3E dosing, so the fair comparison is against two products, not one.'
-  ]
-},
-{
-  id:'bacflora-br', name:'Bacflora\u00AE BR', group:'FEED', form:'Powder', tagline:'The Synbiotic for a perfect gut',
-  solutions:['Gut Health','NAGP'], species:['b','l','s'],
-  img:IMG+'bacflora-br.jDUsQWWL_8sDs.png',
-  ch:['Gut health','Antibiotic reduction','FCR / weight gain','Mortality'],
-  feature:'A smart mixture of an efficient probiotic with two prebiotics from yeast (S. cerevisiae) and chicory. Organic acids and their salts enhance digestion and antimicrobial effect, resulting in better feed intake and a healthier gut.',
-  benefits:['Helps to improve the performance of the animals','Provides probiotics to maintain a good flora in the gut','A good alternative for growth promoters','It provides hepatic support'],
-  pack:'10 kg and 25 kg craft bag',
-  args:[
-   'When antibiotic growth promoters must come out, a synbiotic with organic acids covers the performance gap in one inclusion.',
-   'Documented full-cycle layer use without antibiotics at around 92% peak production — a result that technical buyers can act on.',
-   'Works alongside mycotoxin and feed-quality products, so gut support does not replace your existing feed-hygiene programme.'
-  ]
-},
-{
-  id:'globiotic', name:'Globiotic', group:'FARM', form:'Milk soluble powder', tagline:'Cover all spaces before it is too late',
-  solutions:['Early Care'], species:['r'],
-  img:IMG+'globiotic.DPJwohfU_1GvMJK.png',
-  ch:['Calf / piglet start','Mortality','Gut health','Antibiotic reduction'],
-  feature:'The ideal start drink for newborn calves, supplying the immunoglobulins needed for passive immunity. Once immunoglobulins enter the gut they help create a barrier against bacterial colonization or viral penetration, protecting villi formation and digestion. With vitamins, \u00DF-Carotene, organic bound iron, selenium and Enterococcus faecium.',
-  benefits:['Protects intestinal mucosa against transient pathogens','Improves resistance and livability','Optimizes the absorption of nutrients, thus increasing weight gain','\u00DF-Carotene supports the formation of an active immune system','Lactic-acid bacteria promote a healthy intestinal flora','Overall better performance from early stage until weaning'],
-  pack:'1 kg aluminum bags, 2.5 kg buckets, 10 kg and 25 kg craft bags',
-  args:[
-   'Calf mortality in the first weeks is one of the most expensive losses on a dairy or rearing operation — early immune support is where prevention pays.',
-   'Documented on a large Lithuanian rearing operation as a replacement for metaphylactic antibiotic use, with better outcomes.',
-   'Available in small packs for first use and larger packs for continuous programmes on bigger units.'
-  ]
-},
-{
-  id:'growaqua', name:'GrowAqua', group:'FARM', form:'Powder', tagline:'Power of Probiotic & Prebiotic',
-  solutions:['Gut Health','NAGP'], species:['a'],
-  img:IMG+'growaqua.C0NMLsNy_10AbBi.png',
-  ch:['Gut health','Antibiotic reduction','FCR / weight gain'],
-  feature:'A smart mixture of an efficient probiotic with a prebiotic from yeast (S. cerevisiae). Probiotic and prebiotic help to improve animal performance and have a direct effect against unwanted micro-organisms in the gut.',
-  benefits:['Helps to improve the performance of the fish and shrimps','Provides probiotics to maintain good flora in the gut','A good alternative to growth promoters'],
-  pack:'1 kg, 10 kg and 25 kg craft bags',
-  args:[
-   'Brings synbiotic gut support into aquaculture — a separate species channel with its own performance needs.',
-   'Antibiotic-free growth support is a direct requirement in most export-oriented shrimp and fish operations.',
-   'Same synbiotic technology as the terrestrial range, so the approach is familiar if you already work with XVET gut products.'
-  ]
-},
-{
-  id:'milq', name:'MilQ', group:'FEED', form:'Powder', tagline:'Healthy rumen, wealthy milk',
-  solutions:['Liver Support','Immunity','Lactation'], species:['r'],
-  img:IMG+'milq.DjnZnW_P_Z1l7WLm.png',
-  ch:['Milk yield','Liver / kidney stress','FCR / weight gain'],
-  feature:'Special rumen-protected holy thistle extract and Betaine help to ensure proper physiological function of the liver, metabolism and milk performance. Yeast components and calcium propionate work as nutritional support for rumen microbes, with Vitamin-B supply ensured for challenging times.',
-  benefits:['Rumen-protected holy thistle supports liver function','Helps ensuring metabolic functioning','Supports stabilization of rumen activity','Good energy source for rumen microbes','Helps to ensure good milking performance'],
-  pack:'10 kg and 25 kg craft bags',
-  args:[
-   'Milk yield is measured daily on every commercial dairy — the return on investment calculation is available to the farmer without any trial.',
-   'Rumen protection of the thistle extract is the technical differentiator against unprotected herbal liver products sold in the same segment.',
-   'Transition and peak lactation are fixed points in the herd calendar, which turns this into a scheduled rather than reactive purchase.'
-  ]
-},
-{
-  id:'mould-guard-diamond', name:'Mould Guard Diamond', group:'FEED', form:'Powder', tagline:'Activate the shield',
-  solutions:['Feed Quality'], species:['b','l','r','s'],
-  img:IMG+'mould-guard-diamond.3imxiWq9_Z28A4Ma.png',
-  ch:['Feed storage & mould','Mycotoxins','Gut health'],
-  feature:'A less irritant product than the majority of powder anti-fungal products based on organic acids. A powerful antifungal agent with a rich composition of citrus seed extract and organic acids with salts, with propionic acid content of especial importance. The carrier acts as an anti-caking agent, making the product easy to handle, mix and pelletize.',
-  benefits:['Citrus seed extract potentiates the activity of organic acids, allowing less inclusion','Propionic, formic, acetic and sorbic acids help to decrease toxin sources in the raw material','The acidifying effect decreases bacterial and fungal colonization','Aluminum silicate absorbs and traps toxins by inactivating them','Fast action with acids, slow release for long term effect'],
-  pack:'10 kg and 25 kg craft bags',
-  args:[
-   'Citrus seed extract potentiates the acids, so the working dose is lower. The correct comparison is cost per ton of protected feed, not price per kilo — and on that basis it wins.',
-   'Less irritant and non-caking: the feed mill operator can handle it without the corrosion and handling complaints that come with straight propionic acid.',
-   'Humidity-based dosing table from 250 g to 2 kg per ton makes the recommendation concrete on the first visit, and volumes rise automatically in the rainy season.'
-  ]
-},
-{
-  id:'novosol', name:'Novosol\u00AE', group:'HEALTH', form:'Liquid', tagline:'One step forward',
-  solutions:['Gut Health','NAGP'], species:['b','l','s'],
-  img:IMG+'novosol.i5FOG4p5_2iL0ki.png',
-  ch:['Gut health','FCR / weight gain','Antibiotic reduction','Mortality'],
-  feature:'A combination of fatty acids and essential oils targeting intestinal mucosa. Fatty acids provide the benefits of organic acids without dependency on pH for activity, maintaining action through the entire intestinal tract without being degraded or buffered.',
-  benefits:['Quick protection of digestive tract from the beginning','Decreased incidence of complications from opportunistic harmful factors','Promotion of a healthy intestinal mucosa, for supporting body own resistance and absorption of nutrients','Better FCR, weight gain, and liveability'],
-  pack:'1 l bottle, 5 l and 25 l canister',
-  args:[
-   'pH-independent activity through the whole intestinal tract — a clearer technical profile than buffered organic acids that lose effect as pH rises.',
-   'Especially relevant in peak and finishing periods, when protecting final weight and liveability matters most.',
-   'Field feedback points to higher final body weight together with lower mortality — two results that both protect the farm economy.'
-  ]
-},
-{
-  id:'smooth-pro', name:'Smooth Pro', group:'FARM', form:'Liquid', tagline:'Naturally calming',
-  solutions:['Carcass Quality'], species:['b','r','s'],
-  img:IMG+'smooth-pro.Vt06tulr_Z2d3l9v.png',
-  ch:['Carcass quality','Mortality','FCR / weight gain'],
-  feature:'In broilers, excessive movements during the last days of rearing or struggles during transport and harvest may cause scratches and bruising, increasing mortality and carcass rejection at the slaughterhouse. In cattle and pigs, reducing excessive movement has a positive effect on body energy savings and therefore on feed costs.',
-  benefits:['Helps to calm animals down, avoiding excessive movements and energy waste','The calming effect helps to avoid bruising and scratches during harvest or transport','Better skin integrity and less rejections at the slaughterhouse due to skin lesions'],
-  pack:'250 ml, 500 ml and 1 l bottle, 5 l and 25 l canister',
-  args:[
-   'Carcass rejection, bruising and scratches are costs you already measure at slaughter — Smooth Pro targets that loss directly.',
-   'Used only in the last days before harvest, so cost per bird stays low against the value of a downgraded carcass.',
-   'Few products occupy this pre-harvest calming niche, giving integrators a clear way to protect carcass quality.'
-  ]
-},
-{
-  id:'tannifit-plus-dry', name:'TanniFit Plus Dry', group:'HEALTH', form:'Water-soluble', tagline:'Bring the digestive system back on track',
-  solutions:['Gut Health'], species:['r'],
-  img:IMG+'tannifit-plus-dry.CVCpI8n__Z1igEME.png',
-  ch:['Calf / piglet start','Gut health','Antibiotic reduction','Mortality'],
-  feature:'A complementary feed with botanical ingredients to stabilize water and electrolyte balance and support physiological digestion in the early life of calves and lambs. The tannin-rich formula has astringent and anti-inflammatory effects on the gut mucosa, combined with oregano essential oil.',
-  benefits:['Quick regulation of intestinal disturbances','Anti-inflammatory and antimicrobial effects','A protected digestive tract','Reduction of pathogen pressure'],
-  pack:'1 kg alu bag, 5 kg bucket, 20 kg alu bags',
-  args:[
-   'Calf and lamb scours is one of the most common early-life challenges — TanniFit Plus Dry is there at the moment digestive support is needed.',
-   'Tannin plus oregano offers a botanical alternative in a category still often handled with antibiotics.',
-   'Available in small packs for targeted use and larger packs when early-life programmes run across more animals.'
-  ]
-},
-{
-  id:'vitamin-ad3e', name:'Vitamin AD3E', group:'FARM', form:'Liquid', tagline:'Advanced protection',
-  solutions:['Vitamin/Mineral/Amino Acids'], species:['b','l','r'],
-  img:IMG+'vitamin-ad3e.W-Y8u0f1_Z1sSiA3.png',
-  ch:['FCR / weight gain','Mortality','Egg performance','Leg problems'],
-  feature:'Vitamin deficiency leads to metabolic malfunctions, resulting in growth depression, lower performance and immunity, and increased susceptibility to diseases. Vitamins A, D3 and E are proven to improve performance parameters in all species.',
-  benefits:['Supports better health status, immune response, hatchability and somatic quality','Provides resistance to diseases and promotes health, growth and fertility','Improved feed efficiency, FCR and weight gain'],
-  pack:'250 ml, 500 ml and 1 l bottle, 5 l and 25 l canister',
-  args:[
-   'A core vitamin category you already know — the difference is German quality and concentration, not a new concept to learn.',
-   'Combines naturally with recovery and respiratory products in the same water line when flocks need extra support.',
-   'Simple to store and use continuously, which makes it a practical foundation product in any programme.'
-  ]
-},
-{
-  id:'x-cid-plus', name:'X-Cid Plus', group:'FARM', form:'Liquid', tagline:'More than pH',
-  solutions:['Acidifiers','Pathogen Pressure'], species:['b','l','s'],
-  img:IMG+'x-cid-plus.B7ENt1G6_Z1tqEYG.png',
-  ch:['Water quality','Gut health','Mortality','Antibiotic reduction'],
-  feature:'A solution designed to enhance water hygiene with robust protection against bacterial contamination. It effectively reduces water pH, creating a hostile environment for harmful bacteria. Used together with chlorine it synergistically boosts the concentration of free chlorine, significantly improving disinfection.',
-  benefits:['Provides protection against bacterial contamination','Reduces water pH','Enhances free chlorine concentration when used with chlorine'],
-  pack:'1 l bottle, 5 l and 25 l canister',
-  args:[
-   'Water-line hygiene is one of the cheapest interventions on the farm — and one of the most often neglected.',
-   'Used with chlorine, it boosts free chlorine concentration, so you get more from the disinfectant you already buy.',
-   'Continuous use across the cycle keeps water hygiene stable, instead of reacting only after problems appear.'
-  ]
-},
-{
-  id:'aromax-dry', name:'Aromax\u00AE Dry', group:'FEED', form:'Powder', tagline:'Boost the appetite',
-  solutions:['Respiratory System Support','Feed Intake'], species:['b','l','r','s'],
-  img:IMG+'aromax-dry.DBMx-WB8_xc0yH.png',
-  ch:['Respiratory pressure','FCR / weight gain','Calf / piglet start','Gut health'],
-  feature:'A rich synergic combination of etheric essential oils from eucalyptus, thyme and mint in powder form. Designed to stimulate appetite, improve feed consumption, feed conversion and weight gain, while promoting a healthy gut flora and improved digestion.',
-  benefits:['Supports young animals in case of respiratory problems','Enhances appetite and supports digestion at all ages','Helps to improve weight gain and feed conversion ratio (FCR)','Provides an additional support to the respiratory system in times of challenges such as low temperatures or high relative humidity'],
-  pack:'1 kg and 20 kg alu bags',
-  args:[
-   'Feed intake is the first thing that drops in every challenge situation — supporting appetite is immediately understood on farm.',
-   'The in-feed route fits feed-mill programmes that buy in tons and on contract, alongside farm-level water products.',
-   'Trial documentation in piglets in Brazil and calves in China supports the young-animal claim across two species and two continents.'
-  ]
-}
-
-];
-</script>
+<script src="data/product_scoring_embed.js"></script>
+<script src="product-data.js"></script>
 
 <script>
 /* =======================================================================
@@ -1887,8 +1681,17 @@ function onBusinessCountryChange(){
   renderMarket();
 }
 
+function initChallengeChips(){
+  const wrap=document.getElementById('challengeChips');
+  if(!wrap) return;
+  wrap.innerHTML=(CHALLENGE_CHIPS||[]).map(label=>
+    `<button class="chip">${String(label).replace(/&/g,'&amp;').replace(/</g,'&lt;')}</button>`
+  ).join('');
+}
+
 function initPrep(){
   populateCountrySelects();
+  initChallengeChips();
 
   document.getElementById('preselectChips').innerHTML=
     PRODUCTS.map(p=>`<button class="chip" data-pre="${p.id}">${p.name}</button>`).join('');
@@ -1926,7 +1729,7 @@ function prepSync(){
   document.getElementById('ppCompany').textContent=co||'\u2014';
   document.getElementById('ppCountry').textContent=ct||'\u2014';
   document.getElementById('ppDate').textContent=dt?new Date(dt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'\u2014';
-  const preNames=state.preselect.map(id=>PRODUCTS.find(p=>p.id===id).name);
+  const preNames=state.preselect.map(id=>(PRODUCTS.find(p=>p.id===id)||{}).name).filter(Boolean);
   document.getElementById('ppPre').textContent=preNames.length?preNames.join(', '):'None';
 
   document.getElementById('tagTitle').textContent=co?`XVET \u00D7 ${co}`:'Workshop';
@@ -2189,101 +1992,136 @@ async function renderMarket(){
 <script>
 /* =======================================================================
    STEP 4 — SCORING ENGINE
-   Weights the active workshop product range against:
-     species split (Step 1)  ·  market size (Step 2)
-     stated problems (Step 1) ·  relevant formats (Step 1)
-     customer types (Step 1)  ·  products pre-selected before the meeting
+   Ranks the catalogue from data/product_scoring_master.csv using:
+     species and format as eligibility gates
+     stated problems, field evidence, BCG priority, country priority,
+     and new-customer fit as the score
+     products pre-selected before the meeting override automatic ranking
+   FAOSTAT market size and customer-channel types are not used.
+   BCG, country status and Entry/Growth are internal ranking inputs only.
    ======================================================================= */
-function marketWeights(){
-  const c=resolveFAOCountry(document.getElementById('mkCountry').value||document.getElementById('pcCountry').value);
-  const d=c?marketOf(c):null;
-  if(!d) return {b:.5,l:.5,r:.5,s:.5,a:.3};
-  const raw={
-    b:d.broiler||0,
-    l:d.layer||0,
-    r:d.ruminants||0,
-    s:d.swine||0,
-    a:0
-  };
-  const max=Math.max(...Object.values(raw))||1;
-  const w={}; for(const k in raw) w[k]=Math.sqrt(raw[k]/max);
-  w.a=0.3;
-  return w;
+const COUNTRY_PRODUCT_STATUS={};
+
+function matchesSelectedSpecies(p){
+  const keys=selectedSpeciesKeys();
+  if(!keys.length) return true;
+  return (p.species||[]).some(k=>keys.includes(k));
 }
-function scoreProduct(p){
-  const why=[], pills=[];
-  if(state.preselect.includes(p.id))
-    return {score:1000,pct:100,why:['Requested by the customer before the workshop'],hits:[]};
-
-  const split=state.split, tot=Object.values(split).reduce((a,b)=>a+b,0);
-  const mw=marketWeights();
-  let sSpecies=0, spHit=[];
-  p.species.forEach(k=>{
-    const share=tot>0?(split[k]/tot):0.2;
-    sSpecies += share*45 + mw[k]*15;
-    if(share>0.05) spHit.push(SPECIES.find(x=>x.k===k).label);
-  });
-  if(spHit.length) why.push('Species: '+spHit.join(', '));
-
-  const ch=vals('challenges');
-  const hits=p.ch.filter(x=>ch.includes(x));
-  const sCh = ch.length ? (hits.length/Math.min(ch.length,4))*55 + hits.length*6 : 0;
-  if(hits.length) why.push('Addresses '+hits.length+' of the stated problems');
-
+function matchesSelectedFormat(p){
   const fm=vals('formats');
-  const fmHit=fm.some(f=>
+  if(!fm.length) return true;
+  return fm.some(f=>
     (f==='Liquid'&&p.form==='Liquid')||
     (f==='Powder'&&/Powder/i.test(p.form))||
     (f==='Water-soluble'&&/soluble/i.test(p.form))||
     (f==='Premix / in-feed'&&p.group==='FEED'));
-  const sFm=fmHit?14:0;
-  if(fmHit) why.push('Preferred format');
+}
+function bcgScore(p){
+  const cat=(typeof BCG_CATEGORY==='object' && BCG_CATEGORY[p.id]) || '';
+  if(cat==='STAR') return 20;
+  if(cat==='CASH COW') return 15;
+  if(cat==='QUESTION MARK') return 10;
+  if(cat==='PET') return 5;
+  return 10;
+}
+function countryProductStatus(country, productId){
+  const key=String(country||'').trim().toLowerCase();
+  const map=COUNTRY_PRODUCT_STATUS[key];
+  return (map && map[productId]) || 'STANDARD';
+}
+function fieldEvidenceBonus(p){
+  if(typeof getFieldExperienceMatches!=='function') return 0;
+  const ctx=selectedTrialContext();
+  const country=selectedFieldCountry();
+  const ids=typeof productLookupIds==='function'?productLookupIds(p.id):[p.id];
+  return ids.some(id=>getFieldExperienceMatches(id,ctx,country).length)?20:0;
+}
+function newCustomerFitAdjustment(p){
+  const tag=p.newCustomerCategory||'';
+  if(tag==='ENTRY') return 5;
+  if(tag==='GROWTH') return -5;
+  return 0;
+}
+function scoreProduct(p){
+  if(state.preselect.includes(p.id))
+    return {score:1000,pct:100,why:['Requested before the workshop'],hits:[],eligible:true};
 
-  const cu=vals('customers');
-  let sCu=0;
-  if(cu.includes('Feed mills')&&p.group==='FEED'){ sCu+=10; why.push('Feed mill channel'); }
-  if(cu.includes('Integrators')&&['smooth-pro','mould-guard-diamond','novosol'].includes(p.id)){
-    sCu+=8; why.push('Integrator-level argument'); }
-  if(cu.includes('Veterinarians')&&p.group==='HEALTH'){ sCu+=6; why.push('Veterinary channel'); }
+  const why=[];
+  const ch=vals('challenges');
+  const hits=(p.ch||[]).filter(x=>ch.includes(x));
+  const status=countryProductStatus(selectedFieldCountry(), p.id);
+  let eligible=status!=='UNAVAILABLE'
+    && matchesSelectedSpecies(p)
+    && matchesSelectedFormat(p)
+    && (!ch.length || hits.length>0);
 
-  let sPr=0;
-  const evidence=(typeof getFieldExperienceMatches==='function')
-    ? getFieldExperienceMatches(p.id,selectedTrialContext(),selectedFieldCountry())
-    : [];
-  if(evidence.length){
-    sPr+=12;
-    why.push(evidence.length+' matching field trial'+(evidence.length>1?'s':''));
+  let challengeScore=0;
+  if(ch.length && hits.length)
+    challengeScore=hits.length>=3?55:hits.length===2?50:45;
+
+  if(!eligible)
+    return {score:0,pct:0,why,hits,eligible:false};
+
+  const keys=selectedSpeciesKeys();
+  if(keys.length){
+    const labels=SPECIES.filter(s=>keys.includes(s.k)&&(p.species||[]).includes(s.k)).map(s=>s.label);
+    if(labels.length) why.push('Species match: '+labels.join(', '));
   }
+  if(vals('formats').length) why.push('Preferred format');
+  if(hits.length) why.push('Addresses '+hits.length+' stated problem'+(hits.length===1?'':'s'));
 
-  const score=Math.round(sSpecies+sCh+sFm+sCu+sPr);
-  return {score,pct:Math.max(4,Math.min(100,Math.round(score/1.65))),why,hits};
+  const evidence=fieldEvidenceBonus(p);
+  if(evidence) why.push('Relevant field evidence available');
+
+  const score=challengeScore+evidence+bcgScore(p)
+    +(status==='PRIORITY'?5:0)+newCustomerFitAdjustment(p);
+  return {score,pct:Math.max(0,Math.min(100,score)),why,hits,eligible:true};
 }
 
 function rankProducts(){
   return PRODUCTS.map(p=>{const r=scoreProduct(p);return {...p,...r}})
-                 .sort((a,b)=>b.score-a.score);
+                 .sort((a,b)=>{
+                   const aPre=state.preselect.includes(a.id), bPre=state.preselect.includes(b.id);
+                   if(aPre!==bPre) return aPre?-1:1;
+                   if(a.eligible!==b.eligible) return a.eligible?-1:1;
+                   if(b.score!==a.score) return b.score-a.score;
+                   return PRODUCTS.findIndex(x=>x.id===a.id)-PRODUCTS.findIndex(x=>x.id===b.id);
+                 });
 }
 function runSelection(){
   const ranked=rankProducts();
-  state.selected=ranked.slice(0,MAX_SELECT).map(p=>p.id);
+  const pre=ranked.filter(p=>state.preselect.includes(p.id));
+  const auto=ranked.filter(p=>p.eligible && !state.preselect.includes(p.id));
+  state.selected=[...pre,...auto].slice(0,MAX_SELECT).map(p=>p.id);
   state.added=[];
   go(5);
+}
+function escapeHtml(value){
+  return String(value || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+function nameWithHover(p, nameClass){
+  const name = escapeHtml(p.name);
+  const tip = escapeHtml(p.feature);
+  if(!tip) return `<div class="${nameClass}">${name}</div>`;
+  return `<div class="prodname-wrap" tabindex="0"><div class="${nameClass}">${name}</div><div class="prodname-tip">${tip}</div></div>`;
 }
 function renderSelection(){
   const ranked=rankProducts();
   const list=state.selected.map(id=>ranked.find(p=>p.id===id)).filter(Boolean);
   document.getElementById('selGrid').innerHTML=list.map((p,i)=>{
     const locked=state.preselect.includes(p.id);
-    const sol=p.solutions.map(x=>`<span class="pill ${p.group==='FEED'?'or':''}">${x}</span>`).join('');
+    const sol=(p.solutions||[]).map(x=>`<span class="pill ${p.group==='FEED'?'or':''}">${x}</span>`).join('');
     const hit=(p.hits||[]).map(x=>`<span class="pill hit">${x}</span>`).join('');
-    const thumb=`<span class="thumb">
-      <img src="assets/${p.id}.png" alt="${p.name}">
-    </span>`;
+    const thumb=`<span class="thumb">${p.img?`<img src="${p.img}" alt="${p.name}">`:''}</span>`;
     return `<div class="shortrow ${p.group}">
       ${thumb}
       <div>
-        <div class="nm">${p.name}</div>
-        <div class="sub">${p.tagline}</div>
+        ${nameWithHover(p,'nm')}
+        <div class="sub">${escapeHtml(p.tagline)}</div>
         <div style="margin-top:9px">${sol}<span class="pill form">${p.form}</span>${hit}</div>
       </div>
       <div class="rt">${locked?'<span class="lockpill">BY CUSTOMER</span>'
@@ -2392,11 +2230,19 @@ function selectedFieldCountry(){
 
 function productHighlightsHTML(p){
   if(typeof renderFieldExperienceHTML!=='function') return '';
-  return renderFieldExperienceHTML(p,selectedTrialContext(),selectedFieldCountry());
+  const ctx=selectedTrialContext();
+  const country=selectedFieldCountry();
+  const ids=typeof productLookupIds==='function'?productLookupIds(p.id):[p.id];
+  for(const id of ids){
+    const html=renderFieldExperienceHTML({...p,id},ctx,country);
+    if(html) return html;
+  }
+  return '';
 }
 
 function proofBlocks(p){
-  const pr=PROOF[p.id]||{brochure:null};
+  const ids=typeof productLookupIds==='function'?productLookupIds(p.id):[p.id];
+  const pr=ids.map(id=>PROOF[id]).find(Boolean)||{brochure:null};
   const count=pr.brochure?'<span class="cnt">1</span>':'<span class="cnt none">none yet</span>';
   return `<div class="acc"><div class="acch" onclick="this.parentElement.classList.toggle('open')">
       <span>Product brochure</span>${count}<span>&#8964;</span></div>
@@ -2416,24 +2262,15 @@ function renderProducts(){
     <div class="prodblock" id="pb-${p.id}">
       <div class="prodhead ${p.group}">
         <div class="prodimg">
-          <div class="prodfallback ${p.group}">
-            <div class="pf">xvet &middot; ${p.group}</div>
-            <div class="pn">${p.name}</div>
-            <div class="pl">${p.form}</div>
-          </div>
-          <img src="${p.img}" alt="${p.name}" loading="lazy"
-            onload="this.style.display='block';this.previousElementSibling.style.display='none'"
-            onerror="this.remove()"></div>
+          ${p.img?`<img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.remove()">`:''}
+        </div>
         <div>
           ${p.added?'<span class="addedflag">ADDED ON REQUEST</span><br>':''}
-          <div class="prodname-wrap" tabindex="0">
-            <div class="prodname">${p.name}</div>
-            <div class="prodname-tip">${p.feature}</div>
-          </div>
+          ${nameWithHover(p,'prodname')}
           <div class="prodtag ${p.group}">${p.tagline}</div>
           <div class="prodpills">
             <span class="pill group ${p.group==='FEED'?'or':p.group}">${String(i+1).padStart(2,'0')} · ${p.group}</span>
-            ${p.solutions.map(x=>`<span class="pill ${p.group==='FEED'?'or':''}">${x}</span>`).join('')}
+            ${(p.solutions||[]).map(x=>`<span class="pill ${p.group==='FEED'?'or':''}">${x}</span>`).join('')}
             <span class="pill form">${p.form}</span>
             ${(p.hits||[]).map(x=>`<span class="pill hit">${x}</span>`).join('')}
           </div>
@@ -2444,17 +2281,17 @@ function renderProducts(){
         <div>
           <h4>Why this product, for this market</h4>
           <ul class="arglist ${p.group==='FEED'?'or':''}">
-            ${p.args.map(a=>`<li>${a}</li>`).join('')}
+            ${(p.args||[]).map(a=>`<li>${a}</li>`).join('')}
           </ul>
         </div>
         <div>
           <h4>Product benefits</h4>
-          <ul class="benlist">${p.benefits.map(b=>`<li>${b}</li>`).join('')}</ul>
+          <ul class="benlist">${(p.benefits||[]).map(b=>`<li>${b}</li>`).join('')}</ul>
           <div style="margin-top:14px">
             <div class="specrow"><span>Group</span><span>${p.group}</span></div>
             <div class="specrow"><span>Form</span><span>${p.form}</span></div>
-            <div class="specrow"><span>Target species</span><span>${p.species.map(k=>SPECIES.find(x=>x.k===k).label).join(', ')}</span></div>
-            <div class="specrow"><span>Packaging</span><span>${p.pack}</span></div>
+            <div class="specrow"><span>Target species</span><span>${(p.species||[]).map(k=>(SPECIES.find(x=>x.k===k)||{}).label).filter(Boolean).join(', ')||'\u2014'}</span></div>
+            <div class="specrow"><span>Packaging</span><span>${p.pack||'\u2014'}</span></div>
           </div>
           ${p.why&&p.why.length&&!p.added?`<div style="margin-top:12px;padding:11px 13px;border-radius:11px;background:var(--soft);border:1px solid #D8E5DB">
             <div class="small" style="font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--xg)">Selected because</div>
@@ -2472,10 +2309,10 @@ function renderProducts(){
   document.getElementById('moreGrid').innerHTML=rest.map(p=>`
     <div class="moreitem ${shown.includes(p.id)?'on':''}" onclick="toggleAdded('${p.id}')">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:start">
-        <div><div class="nm">${p.name}</div><div class="sub">${p.tagline}</div></div>
+        <div>${nameWithHover(p,'nm')}<div class="sub">${escapeHtml(p.tagline)}</div></div>
         <span class="badge ${shown.includes(p.id)?'':(p.group==='FEED'?'or':'grey')}" style="flex:0 0 auto">${shown.includes(p.id)?'ADDED':p.group}</span>
       </div>
-      <div class="sub" style="margin-top:7px">${p.form} &middot; ${p.solutions.join(', ')}</div>
+      <div class="sub" style="margin-top:7px">${p.form} &middot; ${(p.solutions||[]).join(', ')}</div>
     </div>`).join('');
 }
 
@@ -2529,7 +2366,7 @@ ${notes}
 
 SELECTED PRODUCTS (${sel.length})
 ${sel.map((p,i)=>`${i+1}. ${p.name} — ${p.tagline} (${p.group}, ${p.form})${p.added?' [added on customer request]':''}
-   ${p.args[0]}`).join('\n')}
+   ${(p.args&&p.args[0])||''}`).join('\n')}
 
 NEXT STEPS
 1. XVET sends product information and price offer.
@@ -2546,7 +2383,7 @@ NEXT STEPS
    INIT
    ======================================================================= */
 (async function boot(){
-  await Promise.all([loadFAOSTAT(),loadFieldTrialsCSV()]);
+  await Promise.all([loadFAOSTAT(),loadFieldTrialsCSV(),loadProductScoringCSV()]);
   initPrep();
   initSplit();
   syncProfile();

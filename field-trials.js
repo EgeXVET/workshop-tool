@@ -16,29 +16,43 @@ const SPECIES_KEY_TO_TRIAL = {
 };
 
 const FIELD_CHALLENGE_MAP = {
-  'respiratory pressure': 'respiratory-pressure',
-  'mortality': 'mortality',
-  'heat stress': 'heat-stress',
-  'fcr / weight gain': 'fcr-weight-gain',
-  'gut health': 'gut-health',
-  'vaccine reaction': 'vaccine-reaction',
-  'egg performance': 'egg-performance',
-  'eggshell quality': 'eggshell-quality',
-  'mycotoxins': 'mycotoxins',
-  'feed storage & mould': 'feed-storage-mould',
-  'feed storage & mold': 'feed-storage-mould',
-  'leg problems': 'leg-problems',
-  'liver / kidney stress': 'liver-kidney-stress',
-  'antibiotic reduction': 'antibiotic-reduction',
-  'calf / piglet start': 'calf-piglet-start',
-  'water quality': 'water-quality',
-  'carcass quality': 'carcass-quality',
-  'milk yield': 'milk-yield'
+  'respiratory pressure': ['respiratory-pressure'],
+  'respiratory challenges': ['respiratory-pressure'],
+  'mortality': ['mortality'],
+  'heat stress': ['heat-stress'],
+  'heat stress & dehydration': ['heat-stress'],
+  'fcr / weight gain': ['fcr-weight-gain'],
+  'growth & feed efficiency': ['fcr-weight-gain'],
+  'gut health': ['gut-health'],
+  'gut health & digestion': ['gut-health'],
+  'vaccine reaction': ['vaccine-reaction'],
+  'egg performance': ['egg-performance'],
+  'eggshell quality': ['eggshell-quality'],
+  'eggshell & egg quality': ['eggshell-quality','egg-performance'],
+  'mycotoxins': ['mycotoxins'],
+  'mycotoxin challenges': ['mycotoxins'],
+  'feed storage & mould': ['feed-storage-mould'],
+  'feed storage & mold': ['feed-storage-mould'],
+  'feed preservation & mould': ['feed-storage-mould'],
+  'leg problems': ['leg-problems'],
+  'bone, leg & mineral health': ['leg-problems','eggshell-quality'],
+  'liver / kidney stress': ['liver-kidney-stress'],
+  'liver & metabolic health': ['liver-kidney-stress'],
+  'kidney & renal health': ['liver-kidney-stress'],
+  'antibiotic reduction': ['antibiotic-reduction'],
+  'calf / piglet start': ['calf-piglet-start'],
+  'early-life & young-animal support': ['calf-piglet-start'],
+  'water quality': ['water-quality'],
+  'water quality & hygiene': ['water-quality'],
+  'carcass quality': ['carcass-quality'],
+  'milk yield': ['milk-yield'],
+  'milk & lactation performance': ['milk-yield']
 };
 
 function normalizeChallengeLabel(label) {
   const key = String(label || '').toLowerCase().replace(/\s+/g, ' ').trim();
-  return FIELD_CHALLENGE_MAP[key] ? [FIELD_CHALLENGE_MAP[key]] : [];
+  if (!key) return [];
+  return FIELD_CHALLENGE_MAP[key] || [];
 }
 
 function parseFieldTrialsCSV(text) {
@@ -177,6 +191,35 @@ function getFieldExperienceMatches(productId, context, selectedCountry) {
     .slice(0, 2);
 }
 
+function getFieldExperienceForProductPage(productId, context, selectedCountry) {
+  const matched = getFieldExperienceMatches(productId, context, selectedCountry);
+  if (matched.length) return matched;
+  if (!FIELD_TRIALS_LOADED || !productId) return [];
+  const shares = context.speciesShares || {};
+  return FIELD_TRIALS
+    .filter(trial => trial.product_ids.includes(productId))
+    .map(trial => {
+      const matchingSpecies = trial.species_tags.filter(species => (shares[species] || 0) > 0);
+      const speciesShare = matchingSpecies.length
+        ? Math.max(...matchingSpecies.map(species => shares[species] || 0))
+        : 0;
+      return {
+        ...trial,
+        score: trial.evidence_strength,
+        speciesShare,
+        matchingSpecies: matchingSpecies.length ? matchingSpecies : trial.species_tags,
+        matchingChallenges: []
+      };
+    })
+    .sort((a, b) =>
+      b.evidence_strength - a.evidence_strength
+      || b.speciesShare - a.speciesShare
+      || (Number(b.year) || 0) - (Number(a.year) || 0)
+      || a.trial_id.localeCompare(b.trial_id)
+    )
+    .slice(0, 2);
+}
+
 function fieldEscape(value) {
   return String(value == null ? '' : value)
     .replace(/&/g, '&amp;')
@@ -290,7 +333,10 @@ function fieldHighlight(trial) {
 }
 
 function renderFieldExperienceHTML(productObj, context, selectedCountry) {
-  const matches = getFieldExperienceMatches(productObj.id, context, selectedCountry);
+  const lookup = typeof getFieldExperienceForProductPage === 'function'
+    ? getFieldExperienceForProductPage
+    : getFieldExperienceMatches;
+  const matches = lookup(productObj.id, context, selectedCountry);
   if (!matches.length) return '';
   return `<section class="field-experience">
     ${fieldHighlight(matches[0])}
