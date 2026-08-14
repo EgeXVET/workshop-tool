@@ -224,6 +224,31 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 .rmv:hover{border-color:var(--rd);color:var(--rd)}
 .lockpill{font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--or)}
 
+.pair-profile{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}
+.pair-profile .sumcard{padding:14px}
+.pair-profile .k{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pair-profile .v{font-weight:600;margin-top:4px;font-size:14px;color:var(--ink);line-height:1.4}
+.pairlist{display:grid;gap:12px;margin-top:16px}
+.paircard{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;
+  padding:16px 18px 16px 16px;border:1px solid var(--line);border-radius:16px;background:#fff;
+  opacity:0;transform:translateY(12px);transition:opacity .4s ease,transform .4s ease}
+.paircard.in{opacity:1;transform:none}
+.paircard .thumb{width:72px;height:72px;border-radius:14px;background:#E7EDE8;flex:0 0 auto;
+  display:block;overflow:hidden;position:relative}
+.paircard .thumb img{display:block;width:100%;height:100%;object-fit:cover}
+.paircard .thumb::after{content:"";position:absolute;inset:0;border-radius:14px}
+.paircard.HEALTH .thumb::after{background:rgba(140,163,107,.65)}
+.paircard.FEED .thumb::after{background:rgba(242,90,34,.65)}
+.paircard.FARM .thumb::after{background:rgba(80,150,179,.65)}
+.pair-why{font-size:13px;font-weight:600;color:var(--xg);line-height:1.4;margin-bottom:4px}
+.pair-why b{color:var(--ink);font-weight:700}
+.paircard .nm{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.paircard .sub{font-size:13.5px;color:var(--muted);margin-top:4px}
+.paircard .rt{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex:0 0 auto}
+@media (prefers-reduced-motion:reduce){
+  .paircard{opacity:1;transform:none;transition:none}
+}
+
 /* documentation panel */
 .docbox{margin-top:14px;border:1px solid var(--line);border-radius:13px;overflow:hidden}
 .docbox .dh{padding:10px 14px;background:var(--soft);font-size:11px;font-weight:700;
@@ -389,7 +414,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 .fe-values b{font-size:20px;line-height:1.15;color:var(--xg)}
 .fe-values b span{font-size:11px;color:var(--muted);font-weight:600}
 .fe-arrow{color:var(--xg-l);font-weight:800}
-.fe-effect{margin-top:6px;color:var(--or);font-size:12px;font-weight:700}
+.fe-effect{margin-top:6px;color:var(--xg);font-size:12px;font-weight:700}
 @media (max-width:760px){
   .field-experience{margin-left:14px;margin-right:14px}
   .fe-highlight{align-items:flex-start;flex-direction:column}
@@ -450,6 +475,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 .prodhead.FEED .prodimg::after{background:rgba(242,90,34,.65)}
 .prodhead.FARM .prodimg::after{background:rgba(80,150,179,.65)}
 .prodname{font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1.05;margin:6px 0 4px}
+.proddesc{grid-column:1 / -1;margin:6px 0 0;font-size:13.5px;line-height:1.55;color:#41544A;max-width:58em}
 .prodname-wrap{position:relative;display:inline-block;max-width:100%}
 .prodname-wrap .prodname,
 .prodname-wrap .nm{margin:0;cursor:help;border-bottom:1px dotted rgba(0,103,47,.35)}
@@ -511,8 +537,54 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 .deposit{margin-top:8px;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;
   background:#FFEFE7;border:1px solid #F8C4AE;color:#B93C10;font-size:12.5px;font-weight:600}
 
+/* ---------- selection overlay ---------- */
+.select-overlay{
+  position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:28px;
+  background:linear-gradient(160deg,#004E23 0%,#00672F 52%,#0A2E18 100%);
+  color:#fff;opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .28s ease,visibility .28s
+}
+.select-overlay.on{opacity:1;visibility:visible;pointer-events:auto}
+.select-overlay-glow{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 38%,rgba(98,187,69,.38),transparent 62%)
+}
+.select-overlay-scan{
+  position:absolute;left:0;right:0;height:140px;pointer-events:none;opacity:.12;
+  background:linear-gradient(180deg,transparent,rgba(183,232,154,.9),transparent);
+  animation:selectScan 2.4s ease-in-out infinite
+}
+@keyframes selectScan{from{top:-140px}to{top:110%}}
+.select-overlay-inner{position:relative;z-index:1;width:min(560px,100%);text-align:left}
+.select-overlay-inner .eyebrow{color:#B7E89A}
+.select-overlay-inner h2{color:#fff;margin:8px 0 8px;font-size:clamp(28px,4vw,42px)}
+.select-overlay-for{color:#C9E6D4;font-size:15px;font-weight:500;margin:0 0 22px}
+.select-progress{height:4px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden;margin-bottom:22px}
+.select-progress span{display:block;height:100%;width:0;border-radius:99px;background:var(--xg-l);
+  box-shadow:0 0 18px rgba(98,187,69,.55);transition:width .45s ease}
+.select-checks{list-style:none;padding:0;margin:0;display:grid;gap:11px}
+.select-checks li{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:500;
+  color:rgba(255,255,255,.42);transform:translateY(4px);transition:color .3s,transform .3s,opacity .3s}
+.select-checks li.on{color:#fff;transform:none}
+.select-check-mark{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(255,255,255,.28);
+  position:relative;background:transparent;transition:background .25s,border-color .25s,box-shadow .25s}
+.select-checks li.on .select-check-mark{background:var(--xg-l);border-color:var(--xg-l);
+  box-shadow:0 0 0 4px rgba(98,187,69,.18)}
+.select-checks li.on .select-check-mark:after{content:"";position:absolute;left:7px;top:4px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.select-ticker{min-height:22px;margin-top:22px;font-size:13px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:#B7E89A;opacity:.9}
+.select-finale{margin-top:18px;font-size:18px;font-weight:700;color:#B7E89A;min-height:28px;
+  opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s}
+.select-overlay.done .select-finale{opacity:1;transform:none}
+.select-overlay.done .select-ticker{opacity:0}
+@media (prefers-reduced-motion:reduce){
+  .select-overlay,.select-progress span,.select-checks li,.select-finale{transition:none}
+  .select-overlay-scan{animation:none;display:none}
+}
+
 @media print{
-  .topbar,.navsteps,.footer-actions,.jumpbar,.cta{display:none!important}
+  .topbar,.navsteps,.footer-actions,.jumpbar,.cta,.select-overlay{display:none!important}
   .screen{display:block!important;page-break-after:always;padding:0}
   body{background:#fff}
 }
@@ -525,6 +597,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
   .xvsplit{grid-template-columns:1fr}
   .xvright{position:static}
   .supgrid{grid-template-columns:1fr}
+  .pair-profile{grid-template-columns:1fr 1fr}
 }
 @media(max-width:900px){
   .screen{padding:18px 14px 50px}
@@ -535,6 +608,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
   .supgrid{grid-template-columns:1fr}
   .shortrow{grid-template-columns:auto 1fr}
   .shortrow .rt{grid-column:2;align-items:flex-start}
+  .paircard{grid-template-columns:auto 1fr}
+  .paircard .rt{grid-column:2;align-items:flex-start}
+  .pair-profile{grid-template-columns:1fr}
   .navsteps{display:none}
   .sticky{position:static}
   .splitrow{grid-template-columns:96px 1fr 50px}
@@ -553,6 +629,20 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
     </div>
     <div class="navsteps" id="navsteps"></div>
   </header>
+
+  <div id="selectOverlay" class="select-overlay" aria-hidden="true">
+    <div class="select-overlay-glow"></div>
+    <div class="select-overlay-scan"></div>
+    <div class="select-overlay-inner">
+      <div class="eyebrow">Selection engine</div>
+      <h2 id="selectOverlayTitle">Matching products for this customer</h2>
+      <p class="select-overlay-for" id="selectOverlayFor">Taking your data and ranking the catalogue.</p>
+      <div class="select-progress"><span id="selectProgressFill"></span></div>
+      <ul class="select-checks" id="selectChecks"></ul>
+      <div class="select-ticker" id="selectTicker"></div>
+      <div class="select-finale" id="selectFinale"></div>
+    </div>
+  </div>
 
   <!-- ===================== 0 · PRE-MEETING PREP ===================== -->
   <section class="screen active" data-title="Prep" data-prep="1">
@@ -662,16 +752,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
         <div class="eyebrow">Workshop</div>
         <h1><span style="color:var(--xg)">XVET</span> <span style="color:var(--muted);font-weight:300">&times;</span>
           <span id="heroCompany">Your Company</span></h1>
-        <p class="lead">A structured working session: understand the business, look at the market, and select the
-          products with the strongest commercial case for this market &mdash; before any commercial discussion.</p>
+        <p class="lead">Understanding your business, looking at the market, and selecting products with the strongest fit tailored to your market&rsquo;s needs.</p>
         <button class="cta dark" onclick="go(2)">Begin &rarr;</button>
 
         <div class="agenda">
-          <div><strong>01</strong>Who XVET is</div>
-          <div><strong>02</strong>Understand the business</div>
-          <div><strong>03</strong>Market data for this country</div>
-          <div><strong>04</strong>Product shortlist &mdash; max. 5</div>
-          <div><strong>05</strong>Product value &amp; proof</div>
+          <div><strong>01</strong>XVET introduction</div>
+          <div><strong>02</strong>Learning about your business</div>
+          <div><strong>03</strong>Reviewing market data</div>
+          <div><strong>04</strong>Product shortlist</div>
+          <div><strong>05</strong>Product benefits</div>
           <div><strong>06</strong>Summary &amp; next steps</div>
         </div>
       </div>
@@ -680,8 +769,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
         <div class="eyebrow" style="color:#B7E89A">Why XVET</div>
         <h3 style="font-size:29px;margin:8px 0 10px;color:#fff;font-weight:700;letter-spacing:-.025em">
           Care today for a better tomorrow.</h3>
-        <p>German-manufactured drinking water and feed additive solutions for less-antibiotics animal production &mdash;
-          supported by field results, technical documentation and marketing support for the distributor.</p>
         <div class="trustgrid">
           <div class="trust"><b>2002</b>Founded in Hamburg</div>
           <div class="trust"><b>55+</b>Countries worldwide</div>
@@ -689,7 +776,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
           <div class="trust"><b>DE</b>Made in Germany</div>
         </div>
         <div style="margin-top:16px;padding:14px;border-left:3px solid #B7E89A;background:rgba(255,255,255,.07);border-radius:12px;font-size:13.5px;line-height:1.55">
-          &ldquo;Customers who started with XVET do not go back to cheaper products.&rdquo;
+          &ldquo;Customers who started with XVET do not go back to lower quality products.&rdquo;
           <div class="small" style="color:#A9CCB6;margin-top:5px">Distributor feedback, UAE</div>
         </div>
       </div>
@@ -706,13 +793,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
       <div class="xvsplit">
         <div class="xvleft">
           <h3>Our promise</h3>
-          <p>XVET Germany is a German supplier of non-pharmaceutical feed and water additive solutions, with over
-            20 years of experience and exports to over 55 countries. We offer practical, preventive products that
-            support animal performance, and we work through long-term distributor partnerships. Our products are made
-            in Germany, GMP+ certified, and supported with the necessary export and free sale documentation.</p>
+          <p>XVET focuses on non-pharmaceutical feed and drinking water additive solutions for animal production, with a preventive approach that supports performance and animal health rather than medication. The company has been active for nearly 25 years, offers around 45 standard solutions, and combines field-proven experience with scientific backing and GMP+ quality.</p>
 
           <div class="xvgrid" style="margin-top:18px">
-            <div class="xvfact"><b>2002</b><span>Founded in Hamburg, Germany. Over two decades supporting efficient, sustainable farming.</span></div>
+            <div class="xvfact"><b>2002</b><span>Founded in Hamburg, Germany. Nearly 25 years supporting efficient, sustainable farming.</span></div>
             <div class="xvfact"><b>55+</b><span>Countries on export today &mdash; global reach with a Made-in-Germany quality promise.</span></div>
             <div class="xvfact"><b>250+</b><span>Product registrations completed worldwide for partners who need market access.</span></div>
             <div class="xvfact"><b>50+</b><span>International field and university trials proving product efficiency in real conditions.</span></div>
@@ -891,7 +975,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
           <div class="qbody">
             <div class="chips" data-group="formats">
               <button class="chip">Liquid</button><button class="chip">Powder</button>
-              <button class="chip">Water-soluble</button><button class="chip">Premix / in-feed</button>
+              <button class="chip">Water-soluble</button>
             </div>
           </div>
         </div>
@@ -1030,9 +1114,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
       <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;justify-content:space-between">
         <div>
           <div class="eyebrow">Step 4</div>
-          <h2>Product shortlist</h2>
-          <p>The five products with the strongest case for this market, ranked against the species split, the
-            market data and the stated problems. Further products can be added later, at the end of Step 4.</p>
+          <h2>Matched to your challenges</h2>
+          <p>Each stated problem mapped to the strongest product for this market. Further products can be added later, on the next page.</p>
         </div>
         <div class="selcounter">
           <span id="selCount">0 / 5 selected</span>
@@ -1040,7 +1123,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
         </div>
       </div>
 
-      <div class="shortlist" id="selGrid"></div>
+      <div class="pair-profile" id="pairProfile"></div>
+      <div class="pairlist" id="selGrid"></div>
 
       <div class="footer-actions">
         <button class="cta ghost" onclick="go(4)">&larr; Back</button>
@@ -1585,7 +1669,10 @@ const SPECIES=[
 ];
 const MAX_SELECT=5;
 
-const state={ split:{b:0,l:0,r:0,s:0,a:0}, preselect:[], selected:[], added:[], qual:{} };
+const state={ split:{b:0,l:0,r:0,s:0,a:0}, preselect:[], selected:[], pairings:[], added:[], qual:{} };
+let selectOverlayActive=false;
+let selectOverlayTimers=[];
+let selectTickerTimer=0;
 
 const screens=[...document.querySelectorAll('.screen')];
 const nav=document.getElementById('navsteps');
@@ -1593,7 +1680,7 @@ const nav=document.getElementById('navsteps');
 let PRESENTING=false;
 function buildNav(){
   nav.innerHTML='';
-  const names=['0 · Prep','Welcome','1 · XVET','2 · Business','3 · Market','4 · Shortlist','5 · Products','6 · Summary'];
+  const names=['0 · Prep','Welcome','1 · XVET','2 · Your Business','3 · Market','4 · Shortlist','5 · Products','6 · Summary'];
   screens.forEach((s,i)=>{
     const b=document.createElement('button');
     b.textContent=names[i]||s.dataset.title;
@@ -1608,11 +1695,14 @@ function applyPresentationMode(){
   const b=nav.querySelector('[data-prep-btn]');
   if(b) b.style.display=PRESENTING?'none':'';
 }
-function startPresentation(){ PRESENTING=true; applyPresentationMode(); go(1); }
+function startPresentation(){ PRESENTING=true; applyPresentationMode(); prepSync(); go(1); }
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){ PRESENTING=!PRESENTING; applyPresentationMode(); }
+  if(e.key!=='Escape') return;
+  if(selectOverlayActive){ skipSelectOverlay(); return; }
+  PRESENTING=!PRESENTING; applyPresentationMode();
 });
 function go(i){
+  if(selectOverlayActive && i!==5) closeSelectOverlay();
   screens.forEach((s,x)=>s.classList.toggle('active',x===i));
   [...nav.children].forEach((b,x)=>b.classList.toggle('active',x===i));
   if(i===4) renderMarket();
@@ -1735,7 +1825,9 @@ function prepSync(){
   document.getElementById('tagTitle').textContent=co?`XVET \u00D7 ${co}`:'Workshop';
   document.getElementById('tagSub').textContent=ct?(co?`Workshop \u00B7 ${ct}`:ct):'Set up the workshop in Step 0';
   document.getElementById('heroCompany').textContent=co||'Your Company';
-  if(co && !document.getElementById('company').value) document.getElementById('company').value=co;
+  if(co) document.getElementById('company').value=co;
+  const contact=document.getElementById('pcContact').value.trim();
+  if(contact) document.getElementById('sales').value=contact;
   if(ct){
     const resolved=resolveFAOCountry(ct);
     const setIf = (id)=>{
@@ -2013,8 +2105,7 @@ function matchesSelectedFormat(p){
   return fm.some(f=>
     (f==='Liquid'&&p.form==='Liquid')||
     (f==='Powder'&&/Powder/i.test(p.form))||
-    (f==='Water-soluble'&&/soluble/i.test(p.form))||
-    (f==='Premix / in-feed'&&p.group==='FEED'));
+    (f==='Water-soluble'&&/soluble/i.test(p.form)));
 }
 function bcgScore(p){
   const cat=(typeof BCG_CATEGORY==='object' && BCG_CATEGORY[p.id]) || '';
@@ -2088,14 +2179,124 @@ function rankProducts(){
                    return PRODUCTS.findIndex(x=>x.id===a.id)-PRODUCTS.findIndex(x=>x.id===b.id);
                  });
 }
-function runSelection(){
+function pairProducts(){
   const ranked=rankProducts();
-  const pre=ranked.filter(p=>state.preselect.includes(p.id));
-  const auto=ranked.filter(p=>p.eligible && !state.preselect.includes(p.id));
-  state.selected=[...pre,...auto].slice(0,MAX_SELECT).map(p=>p.id);
+  const used=new Set();
+  const pairings=[];
+  const add=(p,kind,label)=>{
+    if(!p||used.has(p.id)||pairings.length>=MAX_SELECT) return false;
+    used.add(p.id);
+    pairings.push({id:p.id,kind,label});
+    return true;
+  };
+  (state.preselect||[]).forEach(id=>{
+    const p=ranked.find(x=>x.id===id)||PRODUCTS.find(x=>x.id===id);
+    if(p) add(p,'preselect','Requested before the workshop');
+  });
+  vals('challenges').forEach(ch=>{
+    const pick=ranked.find(p=>p.eligible&&!used.has(p.id)&&(p.ch||[]).includes(ch));
+    if(pick) add(pick,'challenge',ch);
+  });
+  ranked.forEach(p=>{
+    if(p.eligible) add(p,'fill','Additional fit');
+  });
+  state.pairings=pairings;
+  state.selected=pairings.map(x=>x.id);
   state.added=[];
+}
+function runSelection(){
+  pairProducts();
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    go(5);
+    return;
+  }
+  startSelectOverlay();
+}
+function clearSelectOverlayTimers(){
+  selectOverlayTimers.forEach(id=>clearTimeout(id));
+  selectOverlayTimers=[];
+  clearInterval(selectTickerTimer);
+  selectTickerTimer=0;
+}
+function closeSelectOverlay(){
+  const el=document.getElementById('selectOverlay');
+  selectOverlayActive=false;
+  clearSelectOverlayTimers();
+  if(!el) return;
+  el.classList.remove('on','done');
+  el.setAttribute('aria-hidden','true');
+}
+function skipSelectOverlay(){
+  if(!selectOverlayActive) return;
+  closeSelectOverlay();
   go(5);
 }
+function startSelectOverlay(){
+  const el=document.getElementById('selectOverlay');
+  if(!el){ go(5); return; }
+  closeSelectOverlay();
+  selectOverlayActive=true;
+
+  const company=(document.getElementById('company')?.value||document.getElementById('pcCompany')?.value||'').trim()||'this customer';
+  const country=(document.getElementById('mkCountry')?.value||document.getElementById('country')?.value||'').trim()||'this market';
+  document.getElementById('selectOverlayTitle').textContent=`Matching products for ${company}`;
+  document.getElementById('selectOverlayFor').textContent=`Taking your data and ranking the catalogue for ${country}.`;
+
+  const steps=[
+    'Reading your business profile',
+    `Applying market data for ${country}`,
+    'Filtering by species and format',
+    'Weighting field evidence',
+    'Ranking the strongest five'
+  ];
+  const list=document.getElementById('selectChecks');
+  list.innerHTML=steps.map(s=>`<li><span class="select-check-mark"></span><span>${String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span></li>`).join('');
+  document.getElementById('selectFinale').textContent='';
+  document.getElementById('selectProgressFill').style.width='0%';
+  document.getElementById('selectTicker').textContent='Evaluating catalogue\u2026';
+
+  el.setAttribute('aria-hidden','false');
+  requestAnimationFrame(()=>el.classList.add('on'));
+
+  const names=(PRODUCTS||[]).map(p=>p.name).filter(Boolean);
+  let ti=0;
+  if(names.length){
+    selectTickerTimer=setInterval(()=>{
+      if(!selectOverlayActive) return;
+      document.getElementById('selectTicker').textContent=`Evaluating ${names[ti%names.length]}\u2026`;
+      ti++;
+    },180);
+  }
+
+  const items=[...list.children];
+  const stepMs=550;
+  items.forEach((li,i)=>{
+    selectOverlayTimers.push(setTimeout(()=>{
+      if(!selectOverlayActive) return;
+      li.classList.add('on');
+      document.getElementById('selectProgressFill').style.width=`${((i+1)/items.length)*100}%`;
+      if(i===items.length-1){
+        clearInterval(selectTickerTimer);
+        selectTickerTimer=0;
+        document.getElementById('selectTicker').textContent='';
+        const n=(state.selected||[]).length;
+        document.getElementById('selectFinale').textContent=n===1?'1 product selected':`${n} products selected`;
+        el.classList.add('done');
+        go(5);
+        selectOverlayTimers.push(setTimeout(()=>{
+          el.classList.remove('on');
+          selectOverlayTimers.push(setTimeout(()=>{
+            el.classList.remove('done');
+            selectOverlayActive=false;
+            el.setAttribute('aria-hidden','true');
+            revealPairCards();
+          },280));
+        },700));
+      }
+    }, stepMs*(i+1)));
+  });
+}
+document.getElementById('selectOverlay')?.addEventListener('click',skipSelectOverlay);
 function escapeHtml(value){
   return String(value || '')
     .replace(/&/g,'&amp;')
@@ -2111,34 +2312,59 @@ function nameWithHover(p, nameClass){
 }
 function renderSelection(){
   const ranked=rankProducts();
-  const list=state.selected.map(id=>ranked.find(p=>p.id===id)).filter(Boolean);
-  document.getElementById('selGrid').innerHTML=list.map((p,i)=>{
+  const pairings=(state.pairings&&state.pairings.length)
+    ? state.pairings
+    : (state.selected||[]).map(id=>({id,kind:'fill',label:'Additional fit'}));
+  const company=(document.getElementById('company')?.value||document.getElementById('pcCompany')?.value||'').trim()||'\u2014';
+  const country=(document.getElementById('mkCountry')?.value||document.getElementById('country')?.value||'').trim()||'\u2014';
+  const profile=document.getElementById('pairProfile');
+  if(profile){
+    profile.innerHTML=`
+      <div class="sumcard"><div class="k">Company</div><div class="v">${escapeHtml(company)}</div></div>
+      <div class="sumcard"><div class="k">Market</div><div class="v">${escapeHtml(country)}</div></div>
+      <div class="sumcard"><div class="k">Species</div><div class="v">${escapeHtml(speciesText())}</div></div>
+      <div class="sumcard"><div class="k">Formats</div><div class="v">${escapeHtml(joined('formats'))}</div></div>
+      <div class="sumcard" style="grid-column:1/-1"><div class="k">Stated challenges</div><div class="v">${escapeHtml(joined('challenges'))}</div></div>`;
+  }
+  const wait=selectOverlayActive;
+  const cards=pairings.map(pair=>{
+    const p=ranked.find(x=>x.id===pair.id);
+    if(!p) return '';
     const locked=state.preselect.includes(p.id);
-    const sol=(p.solutions||[]).map(x=>`<span class="pill ${p.group==='FEED'?'or':''}">${x}</span>`).join('');
-    const hit=(p.hits||[]).map(x=>`<span class="pill hit">${x}</span>`).join('');
-    const thumb=`<span class="thumb">${p.img?`<img src="${p.img}" alt="${p.name}">`:''}</span>`;
-    return `<div class="shortrow ${p.group}">
+    const thumb=`<span class="thumb">${p.img?`<img src="${p.img}" alt="${escapeHtml(p.name)}">`:''}</span>`;
+    return `<div class="paircard ${p.group}${wait?'':' in'}">
       ${thumb}
       <div>
-        ${nameWithHover(p,'nm')}
+        <div class="pair-why">${escapeHtml(pair.label)} &rarr; <b>${escapeHtml(p.name)}</b></div>
+        <div class="nm">${escapeHtml(p.name)}</div>
         <div class="sub">${escapeHtml(p.tagline)}</div>
-        <div style="margin-top:9px">${sol}<span class="pill form">${p.form}</span>${hit}</div>
       </div>
       <div class="rt">${locked?'<span class="lockpill">BY CUSTOMER</span>'
         :`<button class="rmv" onclick="toggleSelect('${p.id}')">Remove</button>`}</div>
     </div>`;
-  }).join('') || '<p>No products selected. Go back and run the shortlist again.</p>';
+  }).filter(Boolean);
+  document.getElementById('selGrid').innerHTML=cards.join('')
+    || '<p>No products selected. Go back and run the shortlist again.</p>';
   updateSelCounter();
+}
+function revealPairCards(){
+  document.querySelectorAll('.paircard').forEach((el,i)=>{
+    setTimeout(()=>el.classList.add('in'), i*150);
+  });
 }
 
 function toggleSelect(id){
   const i=state.selected.indexOf(id);
   if(i>-1){
-    if(state.preselect.includes(id)) return;      // locked
+    if(state.preselect.includes(id)) return;
     state.selected.splice(i,1);
+    if(state.pairings) state.pairings=state.pairings.filter(p=>p.id!==id);
   }else{
-    if(state.selected.length>=MAX_SELECT) return; // hard cap of 5
+    if(state.selected.length>=MAX_SELECT) return;
     state.selected.push(id);
+    state.pairings=state.pairings||[];
+    if(!state.pairings.some(p=>p.id===id))
+      state.pairings.push({id,kind:'fill',label:'Additional fit'});
   }
   renderSelection();
 }
@@ -2240,17 +2466,6 @@ function productHighlightsHTML(p){
   return '';
 }
 
-function proofBlocks(p){
-  const ids=typeof productLookupIds==='function'?productLookupIds(p.id):[p.id];
-  const pr=ids.map(id=>PROOF[id]).find(Boolean)||{brochure:null};
-  const count=pr.brochure?'<span class="cnt">1</span>':'<span class="cnt none">none yet</span>';
-  return `<div class="acc"><div class="acch" onclick="this.parentElement.classList.toggle('open')">
-      <span>Product brochure</span>${count}<span>&#8964;</span></div>
-    <div class="accb">${pr.brochure
-      ? `<div class="emptyline" style="color:var(--ink)">${pr.brochure}</div>`
-      : '<div class="emptyline">No product brochure uploaded yet.</div>'}</div></div>`;
-}
-
 function renderProducts(){
   const sel=selectedProducts();
 
@@ -2266,7 +2481,7 @@ function renderProducts(){
         </div>
         <div>
           ${p.added?'<span class="addedflag">ADDED ON REQUEST</span><br>':''}
-          ${nameWithHover(p,'prodname')}
+          <div class="prodname">${escapeHtml(p.name)}</div>
           <div class="prodtag ${p.group}">${p.tagline}</div>
           <div class="prodpills">
             <span class="pill group ${p.group==='FEED'?'or':p.group}">${String(i+1).padStart(2,'0')} · ${p.group}</span>
@@ -2275,19 +2490,20 @@ function renderProducts(){
             ${(p.hits||[]).map(x=>`<span class="pill hit">${x}</span>`).join('')}
           </div>
         </div>
+        ${p.feature?`<p class="proddesc">${escapeHtml(p.feature)}</p>`:''}
       </div>
       ${productHighlightsHTML(p)}
       <div class="prodbody">
         <div>
-          <h4>Why this product, for this market</h4>
+          <h4>Product benefits</h4>
           <ul class="arglist ${p.group==='FEED'?'or':''}">
-            ${(p.args||[]).map(a=>`<li>${a}</li>`).join('')}
+            ${(p.solutions||[]).map(a=>`<li>${a}</li>`).join('')}
           </ul>
         </div>
         <div>
-          <h4>Product benefits</h4>
-          <ul class="benlist">${(p.benefits||[]).map(b=>`<li>${b}</li>`).join('')}</ul>
-          <div style="margin-top:14px">
+          ${(p.args||[]).length?`<h4>Additional benefits</h4>
+          <ul class="benlist">${p.args.map(b=>`<li>${b}</li>`).join('')}</ul>`:''}
+          <div style="margin-top:${(p.args||[]).length?'14px':'0'}">
             <div class="specrow"><span>Group</span><span>${p.group}</span></div>
             <div class="specrow"><span>Form</span><span>${p.form}</span></div>
             <div class="specrow"><span>Target species</span><span>${(p.species||[]).map(k=>(SPECIES.find(x=>x.k===k)||{}).label).filter(Boolean).join(', ')||'\u2014'}</span></div>
@@ -2297,10 +2513,6 @@ function renderProducts(){
             <div class="small" style="font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--xg)">Selected because</div>
             <div class="small" style="margin-top:3px">${p.why.join(' &middot; ')}</div></div>`:''}
         </div>
-      </div>
-      <div style="padding:0 22px 20px">
-        <div class="eyebrow" style="margin-bottom:9px">Documentation &amp; proof</div>
-        ${proofBlocks(p)}
       </div>
     </div>`).join('');
 
@@ -2366,7 +2578,7 @@ ${notes}
 
 SELECTED PRODUCTS (${sel.length})
 ${sel.map((p,i)=>`${i+1}. ${p.name} — ${p.tagline} (${p.group}, ${p.form})${p.added?' [added on customer request]':''}
-   ${(p.args&&p.args[0])||''}`).join('\n')}
+   ${(p.solutions&&p.solutions[0])||(p.args&&p.args[0])||''}`).join('\n')}
 
 NEXT STEPS
 1. XVET sends product information and price offer.

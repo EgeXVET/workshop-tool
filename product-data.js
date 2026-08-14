@@ -90,7 +90,12 @@ function csvForm(value) {
   return raw;
 }
 
-function csvGroup(value) {
+function csvPackaging(value) {
+  return String(value || '')
+    .replace(/\s*Present in over[\s\S]*$/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
   const raw = String(value || '').trim().toLowerCase();
   if (raw === 'feed') return 'FEED';
   if (raw === 'health') return 'HEALTH';
@@ -130,8 +135,8 @@ function mapProductRow(row) {
     ch: mainChallenge ? [mainChallenge] : [],
     feature: description,
     benefits: [...core, ...extra],
-    pack: String(row.Packaging || '').trim(),
-    args: extra.length ? extra : core,
+    pack: csvPackaging(row.Packaging),
+    args: extra,
     newCustomerCategory: positioning === 'ENTRY' || positioning === 'GROWTH' ? positioning : ''
   };
 }
