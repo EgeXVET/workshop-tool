@@ -96,6 +96,8 @@ function csvPackaging(value) {
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+function csvGroup(value) {
   const raw = String(value || '').trim().toLowerCase();
   if (raw === 'feed') return 'FEED';
   if (raw === 'health') return 'HEALTH';
@@ -159,15 +161,19 @@ async function loadProductScoringCSV() {
   PRODUCTS_LOAD_ERROR = null;
   try {
     let text;
-    try {
-      const response = await fetch(PRODUCT_SCORING_CSV_URL, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      text = await response.text();
-    } catch (fetchError) {
-      if (typeof PRODUCT_SCORING_CSV_EMBED === 'string' && PRODUCT_SCORING_CSV_EMBED.length) {
-        text = PRODUCT_SCORING_CSV_EMBED;
-      } else {
-        throw fetchError;
+    if (location.protocol === 'file:' && typeof PRODUCT_SCORING_CSV_EMBED === 'string' && PRODUCT_SCORING_CSV_EMBED.length) {
+      text = PRODUCT_SCORING_CSV_EMBED;
+    } else {
+      try {
+        const response = await fetch(PRODUCT_SCORING_CSV_URL, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        text = await response.text();
+      } catch (fetchError) {
+        if (typeof PRODUCT_SCORING_CSV_EMBED === 'string' && PRODUCT_SCORING_CSV_EMBED.length) {
+          text = PRODUCT_SCORING_CSV_EMBED;
+        } else {
+          throw fetchError;
+        }
       }
     }
     indexProducts(parseProductCSV(text));

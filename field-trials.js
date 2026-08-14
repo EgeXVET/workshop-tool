@@ -141,15 +141,19 @@ async function loadFieldTrialsCSV() {
   FIELD_TRIALS_LOAD_ERROR = null;
   try {
     let text;
-    try {
-      const response = await fetch(FIELD_TRIALS_CSV_URL, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      text = await response.text();
-    } catch (fetchError) {
-      if (typeof FIELD_TRIALS_CSV_EMBED === 'string' && FIELD_TRIALS_CSV_EMBED.length) {
-        text = FIELD_TRIALS_CSV_EMBED;
-      } else {
-        throw fetchError;
+    if (location.protocol === 'file:' && typeof FIELD_TRIALS_CSV_EMBED === 'string' && FIELD_TRIALS_CSV_EMBED.length) {
+      text = FIELD_TRIALS_CSV_EMBED;
+    } else {
+      try {
+        const response = await fetch(FIELD_TRIALS_CSV_URL, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        text = await response.text();
+      } catch (fetchError) {
+        if (typeof FIELD_TRIALS_CSV_EMBED === 'string' && FIELD_TRIALS_CSV_EMBED.length) {
+          text = FIELD_TRIALS_CSV_EMBED;
+        } else {
+          throw fetchError;
+        }
       }
     }
     indexFieldTrials(parseFieldTrialsCSV(text));
@@ -184,35 +188,6 @@ function getFieldExperienceMatches(productId, context, selectedCountry) {
     .filter(Boolean)
     .sort((a, b) =>
       b.score - a.score
-      || b.speciesShare - a.speciesShare
-      || (Number(b.year) || 0) - (Number(a.year) || 0)
-      || a.trial_id.localeCompare(b.trial_id)
-    )
-    .slice(0, 2);
-}
-
-function getFieldExperienceForProductPage(productId, context, selectedCountry) {
-  const matched = getFieldExperienceMatches(productId, context, selectedCountry);
-  if (matched.length) return matched;
-  if (!FIELD_TRIALS_LOADED || !productId) return [];
-  const shares = context.speciesShares || {};
-  return FIELD_TRIALS
-    .filter(trial => trial.product_ids.includes(productId))
-    .map(trial => {
-      const matchingSpecies = trial.species_tags.filter(species => (shares[species] || 0) > 0);
-      const speciesShare = matchingSpecies.length
-        ? Math.max(...matchingSpecies.map(species => shares[species] || 0))
-        : 0;
-      return {
-        ...trial,
-        score: trial.evidence_strength,
-        speciesShare,
-        matchingSpecies: matchingSpecies.length ? matchingSpecies : trial.species_tags,
-        matchingChallenges: []
-      };
-    })
-    .sort((a, b) =>
-      b.evidence_strength - a.evidence_strength
       || b.speciesShare - a.speciesShare
       || (Number(b.year) || 0) - (Number(a.year) || 0)
       || a.trial_id.localeCompare(b.trial_id)
@@ -333,10 +308,7 @@ function fieldHighlight(trial) {
 }
 
 function renderFieldExperienceHTML(productObj, context, selectedCountry) {
-  const lookup = typeof getFieldExperienceForProductPage === 'function'
-    ? getFieldExperienceForProductPage
-    : getFieldExperienceMatches;
-  const matches = lookup(productObj.id, context, selectedCountry);
+  const matches = getFieldExperienceMatches(productObj.id, context, selectedCountry);
   if (!matches.length) return '';
   return `<section class="field-experience">
     ${fieldHighlight(matches[0])}
