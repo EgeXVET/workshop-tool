@@ -1,8 +1,12 @@
 /* Field Experience
-   Source of truth: data/xvet_field_trials_complete.csv
+   Source of truth: data/XERP_Field_Trials_percent_standardized.csv
    Matching and display are deterministic; no claims or calculations are generated. */
 
-const FIELD_TRIALS_CSV_URL = 'data/xvet_field_trials_complete.csv';
+const FIELD_TRIALS_CSV_URL = 'data/XERP_Field_Trials_percent_standardized.csv';
+const FIELD_TRIAL_LIMIT = 2;
+const FIELD_TRIAL_LIMIT_STRONG = 5;
+/* 160 base + 80 per overlapping challenge. Extra trials (3–5) require at least one challenge match. */
+const FIELD_TRIAL_STRONG_MIN_SCORE = 240;
 let FIELD_TRIALS = [];
 let FIELD_TRIALS_LOADED = false;
 let FIELD_TRIALS_LOAD_ERROR = null;
@@ -85,13 +89,17 @@ function parseFieldTrialsCSV(text) {
     out.push(value);
     return out;
   };
-  const headers = parseLine(lines[0]);
+  const headers = parseLine(lines[0]).map(header => header.replace(/^\uFEFF/, ''));
   return lines.slice(1).filter(Boolean).map(line => {
     const values = parseLine(line);
     const row = {};
     headers.forEach((header, index) => { row[header] = values[index] || ''; });
     return row;
   });
+}
+
+function csvYes(value) {
+  return /^(yes|true|1)$/i.test(String(value || '').trim());
 }
 
 function indexFieldTrials(rows) {
@@ -127,7 +135,22 @@ function indexFieldTrials(rows) {
       control_value: row.control_value,
       treatment_value: row.treatment_value,
       unit: row.unit,
-      effect_or_note: row.effect_or_note
+      effect_or_note: row.effect_or_note,
+      improvement_direction: row.improvement_direction || '',
+      absolute_change: row.absolute_change || '',
+      relative_change_percent: row.relative_change_percent || '',
+      benefit_improvement_percent: row.benefit_improvement_percent || '',
+      improvement_display_value: row.improvement_display_value || '',
+      improvement_display_unit: row.improvement_display_unit || '',
+      improvement_display_text: row.improvement_display_text || '',
+      improvement_source: row.improvement_source || '',
+      front_display_eligible: csvYes(row.front_display_eligible),
+      front_display_primary: csvYes(row.front_display_primary),
+      headline_percent_value: row.headline_percent_value || '',
+      headline_percent_text: row.headline_percent_text || '',
+      headline_metric_label: row.headline_metric_label || '',
+      headline_context: row.headline_context || '',
+      percent_display_valid: csvYes(row.percent_display_valid)
     });
   });
   FIELD_TRIALS = [...grouped.values()].map(trial => ({
@@ -171,7 +194,7 @@ function getFieldExperienceMatches(productId, context, selectedCountry) {
   const selectedChallenges = context.challenges || [];
   if (!selectedSpecies.length) return [];
 
-  return FIELD_TRIALS
+  const ranked = FIELD_TRIALS
     .filter(trial => trial.product_ids.includes(productId))
     .map(trial => {
       const matchingSpecies = trial.species_tags.filter(species => selectedSpecies.includes(species));
@@ -191,8 +214,13 @@ function getFieldExperienceMatches(productId, context, selectedCountry) {
       || b.speciesShare - a.speciesShare
       || (Number(b.year) || 0) - (Number(a.year) || 0)
       || a.trial_id.localeCompare(b.trial_id)
-    )
-    .slice(0, 2);
+    );
+
+  const base = ranked.slice(0, FIELD_TRIAL_LIMIT);
+  const extras = ranked.slice(FIELD_TRIAL_LIMIT)
+    .filter(trial => trial.score >= FIELD_TRIAL_STRONG_MIN_SCORE)
+    .slice(0, FIELD_TRIAL_LIMIT_STRONG - FIELD_TRIAL_LIMIT);
+  return base.concat(extras);
 }
 
 function fieldEscape(value) {
@@ -244,7 +272,7 @@ function renderFieldMetric(result) {
   </div>`;
 }
 
-function renderFieldTrial(trial, label) {
+function renderFieldTrial(trial) {
   const sample = trial.sample_size
     ? (/^\d+$/.test(trial.sample_size)
         ? Number(trial.sample_size).toLocaleString('en-US')
@@ -266,8 +294,7 @@ function renderFieldTrial(trial, label) {
   ].filter(Boolean);
   const metrics = strongestNumericResults(trial);
   return `<article class="fe-trial">
-    <div class="fe-overline">${fieldEscape(label)}</div>
-    <h4>${fieldEscape(trial.headline)}</h4>
+    <h4>${fieldEscape(trialDisplayHeadline(trial))}</h4>
     <div class="fe-product">${fieldEscape(trial.display_product)}</div>
     <div class="fe-facts">${facts.map(fact => `<span>${fieldEscape(fact)}</span>`).join('')}</div>
     <div class="fe-summary-label">Customer summary</div>
@@ -276,34 +303,84 @@ function renderFieldTrial(trial, label) {
   </article>`;
 }
 
-function fieldHighlight(trial) {
-  const results = strongestNumericResults(trial);
-  const result = results.find(item => {
-    const effect = String(item.effect_or_note || '').trim();
-    return /^[+\-?~<>]?\d/.test(effect)
-      && (effect.match(/\d+(?:[.,]\d+)?/g) || []).length === 1;
-  }) || results[0];
-  if (!result) return '';
+function primaryFrontResult(trial) {
+  return (trial.results || []).find(result =>
+    result.front_display_primary
+    && result.front_display_eligible
+    && String(result.improvement_display_value || '').trim()
+  ) || null;
+}
 
-  let value = '';
-  if (/^[+\-?~<>]?\d/.test(String(result.effect_or_note || '').trim())) {
-    value = result.effect_or_note;
-  } else if (result.treatment_value) {
-    value = `${result.treatment_value}${result.unit ? ` ${result.unit}` : ''}`;
-  } else if (result.control_value) {
-    value = `${result.control_value}${result.unit ? ` ${result.unit}` : ''}`;
+function percentHeadlineParts(result) {
+  if (!result || !result.percent_display_valid) return null;
+  const value = String(result.headline_percent_text || '').trim();
+  if (!value) return null;
+  const label = String(result.headline_metric_label || '').trim();
+  const context = String(result.headline_context || '').trim();
+  return { value, label, context };
+}
+
+function trialDisplayHeadline(trial) {
+  const primary = percentHeadlineParts(primaryFrontResult(trial));
+  if (primary) return primary.label ? `${primary.value} ${primary.label}` : primary.value;
+  const fallback = (trial.results || []).map(percentHeadlineParts).find(Boolean);
+  if (fallback) return fallback.label ? `${fallback.value} ${fallback.label}` : fallback.value;
+  return trial.headline;
+}
+
+function formatImprovementKpi(result) {
+  const percent = percentHeadlineParts(result);
+  if (percent) return percent.value;
+  const raw = String(result.improvement_display_value || '').trim();
+  if (!raw) return '';
+  const unit = String(result.improvement_display_unit || '')
+    .replace(/\s+vs\s+(control|comparator)\s*$/i, '')
+    .trim();
+  const text = String(result.improvement_display_text || '').trim();
+  const unsigned = raw.replace(/^[+\-−]\s*/, '');
+  if (!unsigned) return '';
+  const unitSuffix = !unit ? '' : (unit === '%' ? '%' : ` ${unit}`);
+  let sign = '+';
+  if (result.improvement_direction === 'lower_better') sign = '−';
+  if (result.improvement_direction === 'higher_better') sign = '+';
+  if (/lower/i.test(text)) sign = '−';
+  if (/higher/i.test(text)) sign = '+';
+  if (/^[+\-−]/.test(raw)) sign = raw[0] === '+' ? '+' : '−';
+  if (/^[-−]/.test(text)) sign = '−';
+  if (/^[+]/.test(text)) sign = '+';
+  return `${sign}${unsigned}${unitSuffix}`;
+}
+
+function formatImprovementLabel(result) {
+  const percent = percentHeadlineParts(result);
+  if (percent) {
+    const vs = percent.context ? ` ${percent.context}` : '';
+    return percent.label ? percent.label + vs : vs.trim();
   }
+  const metric = String(result.result_metric || '').trim();
+  const blob = `${result.improvement_display_text || ''} ${result.improvement_display_unit || ''}`.toLowerCase();
+  let vs = '';
+  if (/comparator/.test(blob)) vs = ' vs comparator';
+  else if (/vs control/.test(blob) || /\bcontrol\b/.test(blob)) vs = ' vs control';
+  return metric ? metric + vs : vs.trim();
+}
+
+function fieldContextLabel(trial) {
+  return `${fieldEscape(trial.display_product)} | ${fieldEscape(trial.country)}${trial.year ? ` | ${fieldEscape(trial.year)}` : ''}`;
+}
+
+function fieldHighlight(trial) {
+  const primary = primaryFrontResult(trial);
+  const value = primary ? formatImprovementKpi(primary) : '';
+  const label = primary ? formatImprovementLabel(primary) : '';
   if (!value) return '';
 
   return `<div class="fe-highlight">
-    <div>
-      <div class="fe-overline">Field Experience</div>
-      <div class="fe-highlight-context">${fieldEscape(trial.display_product)} | ${fieldEscape(trial.country)}${trial.year ? ` | ${fieldEscape(trial.year)}` : ''}</div>
-    </div>
     <div class="fe-highlight-result">
       <b>${fieldEscape(value)}</b>
-      <span>${fieldEscape(result.result_metric)}</span>
+      <span>${fieldEscape(label)}</span>
     </div>
+    <div class="fe-overline">Field Trial</div>
   </div>`;
 }
 
@@ -314,12 +391,11 @@ function renderFieldExperienceHTML(productObj, context, selectedCountry) {
     ${fieldHighlight(matches[0])}
     <details class="fe-collapse">
       <summary>
-        <span>View field experience</span>
+        <span>${fieldContextLabel(matches[0])}</span>
         <span class="fe-count">${matches.length} trial${matches.length > 1 ? 's' : ''}</span>
       </summary>
       <div class="fe-collapse-body">
-        ${renderFieldTrial(matches[0], 'Best field evidence')}
-        ${matches[1] ? renderFieldTrial(matches[1], 'More field experience') : ''}
+        ${matches.map(trial => renderFieldTrial(trial)).join('')}
       </div>
     </details>
   </section>`;
