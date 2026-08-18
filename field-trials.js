@@ -1,8 +1,10 @@
 /* Field Experience
-   Source of truth: data/XERP_Field_Trials_percent_standardized.csv
+   Source of truth: data/field_trials_master24_mapped.csv
+   Challenge matching uses the mapped "Maps to Master 24" labels directly.
    Matching and display are deterministic; no claims or calculations are generated. */
 
-const FIELD_TRIALS_CSV_URL = 'data/XERP_Field_Trials_percent_standardized.csv';
+const FIELD_TRIALS_CSV_URL = 'data/field_trials_master24_mapped.csv';
+// Legacy field-trial source (disabled): data/XERP_Field_Trials_percent_standardized.csv
 const FIELD_TRIAL_LIMIT = 2;
 const FIELD_TRIAL_LIMIT_STRONG = 5;
 /* 160 base + 80 per overlapping challenge. Extra trials (3–5) require at least one challenge match. */
@@ -19,44 +21,11 @@ const SPECIES_KEY_TO_TRIAL = {
   a: ['aquaculture']
 };
 
-const FIELD_CHALLENGE_MAP = {
-  'respiratory pressure': ['respiratory-pressure'],
-  'respiratory challenges': ['respiratory-pressure'],
-  'mortality': ['mortality'],
-  'heat stress': ['heat-stress'],
-  'heat stress & dehydration': ['heat-stress'],
-  'fcr / weight gain': ['fcr-weight-gain'],
-  'growth & feed efficiency': ['fcr-weight-gain'],
-  'gut health': ['gut-health'],
-  'gut health & digestion': ['gut-health'],
-  'vaccine reaction': ['vaccine-reaction'],
-  'egg performance': ['egg-performance'],
-  'eggshell quality': ['eggshell-quality'],
-  'eggshell & egg quality': ['eggshell-quality','egg-performance'],
-  'mycotoxins': ['mycotoxins'],
-  'mycotoxin challenges': ['mycotoxins'],
-  'feed storage & mould': ['feed-storage-mould'],
-  'feed storage & mold': ['feed-storage-mould'],
-  'feed preservation & mould': ['feed-storage-mould'],
-  'leg problems': ['leg-problems'],
-  'bone, leg & mineral health': ['leg-problems','eggshell-quality'],
-  'liver / kidney stress': ['liver-kidney-stress'],
-  'liver & metabolic health': ['liver-kidney-stress'],
-  'kidney & renal health': ['liver-kidney-stress'],
-  'antibiotic reduction': ['antibiotic-reduction'],
-  'calf / piglet start': ['calf-piglet-start'],
-  'early-life & young-animal support': ['calf-piglet-start'],
-  'water quality': ['water-quality'],
-  'water quality & hygiene': ['water-quality'],
-  'carcass quality': ['carcass-quality'],
-  'milk yield': ['milk-yield'],
-  'milk & lactation performance': ['milk-yield']
-};
-
+/* Legacy FIELD_CHALLENGE_MAP disabled: mapped Master 24 labels now match the
+   product classification labels directly, so no intermediate tag translation is needed. */
 function normalizeChallengeLabel(label) {
-  const key = String(label || '').toLowerCase().replace(/\s+/g, ' ').trim();
-  if (!key) return [];
-  return FIELD_CHALLENGE_MAP[key] || [];
+  const value = String(label || '').replace(/\s+/g, ' ').trim();
+  return value ? [value] : [];
 }
 
 function parseFieldTrialsCSV(text) {
@@ -113,7 +82,9 @@ function indexFieldTrials(rows) {
         display_product: row.display_product,
         historical_product_name: row.historical_product_name,
         species_tags: row.species_tags.split('|').filter(Boolean),
-        challenge_tags: row.challenge_tags.split('|').filter(Boolean),
+        // Legacy tags are retained for traceability but are no longer matched.
+        legacy_challenge_tags: row.challenge_tags.split('|').filter(Boolean),
+        master_challenges: String(row['Maps to Master 24'] || '').split('|').map(value => value.trim()).filter(Boolean),
         country: row.country,
         year: row.year,
         sample_size: row.sample_size,
@@ -199,7 +170,7 @@ function getFieldExperienceMatches(productId, context, selectedCountry) {
     .map(trial => {
       const matchingSpecies = trial.species_tags.filter(species => selectedSpecies.includes(species));
       if (!matchingSpecies.length) return null;
-      const matchingChallenges = trial.challenge_tags.filter(challenge => selectedChallenges.includes(challenge));
+      const matchingChallenges = trial.master_challenges.filter(challenge => selectedChallenges.includes(challenge));
       if (selectedChallenges.length && !matchingChallenges.length) return null;
 
       const speciesShare = Math.max(...matchingSpecies.map(species => shares[species] || 0));

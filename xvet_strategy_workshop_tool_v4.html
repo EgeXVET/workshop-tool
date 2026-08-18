@@ -512,13 +512,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 
 .supgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
 .supcard{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden;display:flex;flex-direction:column}
-.supcard .sh{padding:16px 18px;background:var(--xg);color:#fff}
+.supcard .sh{position:relative;padding:16px 44px 16px 18px;background:var(--xg);color:#fff;cursor:pointer}
+.supcard .sh:after{content:"⌃";position:absolute;right:18px;top:50%;font-size:18px;transform:translateY(-50%)}
+.supcard.collapsed .sh:after{content:"⌄"}
 .supcard:nth-child(2) .sh{background:var(--xg-l)}
 .supcard:nth-child(3) .sh{background:var(--or)}
 .supcard:nth-child(4) .sh{background:var(--xg-d)}
 .supcard .sh h4{margin:0;color:#fff;font-size:16px}
 .supcard .sh .small{color:rgba(255,255,255,.82);display:block;margin-top:2px}
 .supcard .sb{padding:16px 18px}
+.supcard.collapsed .sb{display:none}
 .supcard ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
 .supcard li{position:relative;padding-left:19px;font-size:12.5px;line-height:1.5;color:#33463B}
 .supcard li:before{content:"";position:absolute;left:0;top:6px;width:9px;height:9px;border-radius:3px;background:var(--xg-l)}
@@ -1303,7 +1306,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
           the support around it &mdash; and that support is part of the agreement, at no additional cost.</p>
 
         <div class="supgrid">
-          <div class="supcard">
+          <div class="supcard collapsed">
             <div class="sh"><h4>Launch support</h4><span class="small">A stronger market start</span></div>
             <div class="sb"><ul>
               <li>&euro;100 FOC support with the first FCL</li>
@@ -1313,7 +1316,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
               <li>Launch review after the first market feedback</li>
             </ul></div>
           </div>
-          <div class="supcard">
+          <div class="supcard collapsed">
             <div class="sh"><h4>Marketing support</h4><span class="small">Material to sell with</span></div>
             <div class="sb"><ul>
               <li>Product brochures, adaptable to the local language</li>
@@ -1323,7 +1326,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
               <li>Customer seminars and webinars</li>
             </ul></div>
           </div>
-          <div class="supcard">
+          <div class="supcard collapsed">
             <div class="sh"><h4>Technical support</h4><span class="small">Direct line to Hamburg</span></div>
             <div class="sb"><ul>
               <li>Dosage programmes per species</li>
@@ -1333,7 +1336,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
               <li>Registration dossier and tender documentation</li>
             </ul></div>
           </div>
-          <div class="supcard">
+          <div class="supcard collapsed">
             <div class="sh"><h4>Joint growth</h4><span class="small">After the first order</span></div>
             <div class="sb"><ul>
               <li>Review of what sells and what stalls</li>
@@ -1358,6 +1361,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 </div>
 
 <script src="data/product_scoring_embed.js"></script>
+<script src="data/product_challenges_embed.js"></script>
 <script src="product-data.js"></script>
 
 <script>
@@ -1912,6 +1916,26 @@ document.addEventListener('click',e=>{
   if(c) c.textContent=q.classList.contains('open')?'\u2303':'\u2304';
 });
 
+function toggleSupportCard(header){
+  const card=header.closest('.supcard');
+  if(!card) return;
+  const collapsed=card.classList.toggle('collapsed');
+  header.setAttribute('aria-expanded',String(!collapsed));
+}
+function initSupportCards(){
+  document.querySelectorAll('.supcard .sh').forEach(header=>{
+    header.setAttribute('role','button');
+    header.setAttribute('tabindex','0');
+    header.setAttribute('aria-expanded',String(!header.closest('.supcard').classList.contains('collapsed')));
+    header.onclick=()=>toggleSupportCard(header);
+    header.onkeydown=e=>{
+      if(e.key!=='Enter'&&e.key!==' ') return;
+      e.preventDefault();
+      toggleSupportCard(header);
+    };
+  });
+}
+
 /* =======================================================================
    STEP 0 — PREP
    ======================================================================= */
@@ -2291,7 +2315,9 @@ async function renderMarket(){
 <script>
 /* =======================================================================
    STEP 4 — SCORING ENGINE
-   Ranks the catalogue from data/product_scoring_master.csv using:
+   Ranks product metadata from data/product_scoring_master.csv using challenges
+   from data/product_challenge_classification_v3.csv:
+     primary and secondary challenges both participate in matching
      species and format as eligibility gates
      stated problems, field evidence, BCG priority, country priority,
      and new-customer fit as the score
@@ -2807,6 +2833,7 @@ NEXT STEPS
    ======================================================================= */
 (async function boot(){
   await Promise.all([loadFAOSTAT(),loadFieldTrialsCSV(),loadProductScoringCSV()]);
+  initSupportCards();
   initPrep();
   syncProfile();
 })();

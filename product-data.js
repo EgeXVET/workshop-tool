@@ -1,9 +1,12 @@
 /* Product catalogue
-   Source of truth: data/product_scoring_master.csv
-   Scoring fields (species, form, group, challenges, Entry/Growth) come from that sheet.
+   Product metadata source: data/product_scoring_master.csv
+   Challenge source: data/product_challenge_classification_v3.csv
+   Primary and secondary challenges both participate in matching and scoring.
    BCG categories are verified from XVET Product Analysis (1).csv only — unclassified products get the default score. */
 
 const PRODUCT_SCORING_CSV_URL = 'data/product_scoring_master.csv';
+const PRODUCT_CHALLENGES_CSV_URL = 'data/product_challenge_classification_v3.csv';
+// Legacy challenge source (disabled): the Main Challenge column in product_scoring_master.csv.
 let PRODUCTS = [];
 let CHALLENGE_CHIPS = [];
 let PRODUCTS_LOADED = false;
@@ -104,6 +107,14 @@ function csvGroup(value) {
   return 'FARM';
 }
 
+function normalizedProductKey(value) {
+  return String(value || '')
+    .normalize('NFKD')
+    .replace(/[®™]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
 function csvSpecies(row, mainChallenge) {
   const species = [];
   if (csvFlag(row['Poultry'] || row['Poultry '])) { species.push('b', 'l'); }
@@ -134,7 +145,10 @@ function mapProductRow(row) {
     solutions: core.slice(0, 3),
     species: csvSpecies(row, mainChallenge),
     img: hasWebsitePage ? 'assets/' + id + '.png' : '',
-    ch: mainChallenge ? [mainChallenge] : [],
+    // Legacy: ch: mainChallenge ? [mainChallenge] : [],
+    ch: [],
+    primaryChallenge: '',
+    secondaryChallenges: [],
     feature: description,
     benefits: [...core, ...extra],
     pack: csvPackaging(row.Packaging),
@@ -143,8 +157,25 @@ function mapProductRow(row) {
   };
 }
 
-function indexProducts(rows) {
+function applyProductChallenges(products, challengeRows) {
+  const byName = new Map(challengeRows.map(row => [
+    normalizedProductKey(row['Product name']),
+    row
+  ]));
+  products.forEach(product => {
+    const row = byName.get(normalizedProductKey(product.name));
+    if (!row) return;
+    const primary = String(row['Primary Main Challenge'] || '').trim();
+    const secondary = csvParts(row['Secondary Main Challenges']);
+    product.primaryChallenge = primary;
+    product.secondaryChallenges = secondary;
+    product.ch = [...new Set([primary, ...secondary].filter(Boolean))];
+  });
+}
+
+function indexProducts(rows, challengeRows) {
   PRODUCTS = rows.map(mapProductRow).filter(p => p.id && p.name);
+  applyProductChallenges(PRODUCTS, challengeRows);
   const seen = new Set();
   CHALLENGE_CHIPS = PRODUCTS
     .flatMap(p => p.ch)
@@ -157,26 +188,30 @@ function indexProducts(rows) {
   PRODUCTS_LOADED = true;
 }
 
+async function loadCSVWithFallback(url, embedded) {
+  if (location.protocol === 'file:' && typeof embedded === 'string' && embedded.length) {
+    return embedded;
+  }
+  try {
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.text();
+  } catch (fetchError) {
+    if (typeof embedded === 'string' && embedded.length) return embedded;
+    throw fetchError;
+  }
+}
+
 async function loadProductScoringCSV() {
   PRODUCTS_LOAD_ERROR = null;
   try {
-    let text;
-    if (location.protocol === 'file:' && typeof PRODUCT_SCORING_CSV_EMBED === 'string' && PRODUCT_SCORING_CSV_EMBED.length) {
-      text = PRODUCT_SCORING_CSV_EMBED;
-    } else {
-      try {
-        const response = await fetch(PRODUCT_SCORING_CSV_URL, { cache: 'no-store' });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        text = await response.text();
-      } catch (fetchError) {
-        if (typeof PRODUCT_SCORING_CSV_EMBED === 'string' && PRODUCT_SCORING_CSV_EMBED.length) {
-          text = PRODUCT_SCORING_CSV_EMBED;
-        } else {
-          throw fetchError;
-        }
-      }
-    }
-    indexProducts(parseProductCSV(text));
+    const productEmbed = typeof PRODUCT_SCORING_CSV_EMBED === 'string' ? PRODUCT_SCORING_CSV_EMBED : '';
+    const challengeEmbed = typeof PRODUCT_CHALLENGES_CSV_EMBED === 'string' ? PRODUCT_CHALLENGES_CSV_EMBED : '';
+    const [productText, challengeText] = await Promise.all([
+      loadCSVWithFallback(PRODUCT_SCORING_CSV_URL, productEmbed),
+      loadCSVWithFallback(PRODUCT_CHALLENGES_CSV_URL, challengeEmbed)
+    ]);
+    indexProducts(parseProductCSV(productText), parseProductCSV(challengeText));
   } catch (error) {
     PRODUCTS = [];
     CHALLENGE_CHIPS = [];
