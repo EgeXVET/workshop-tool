@@ -355,19 +355,55 @@ function fieldHighlight(trial) {
   </div>`;
 }
 
+function trialKpi(trial){
+  const primary=primaryFrontResult(trial);
+  if(primary){
+    const v=formatImprovementKpi(primary);
+    if(v) return { value:v, label:formatImprovementLabel(primary) };
+  }
+  /* fall back to any numeric result carrying a display value */
+  const alt=(trial.results||[]).find(r=>String(r.improvement_display_value||'').trim());
+  if(alt){
+    const v=formatImprovementKpi(alt);
+    if(v) return { value:v, label:formatImprovementLabel(alt) };
+  }
+  /* qualitative trials: no defensible number, state the finding instead */
+  return { value:'', label:String(trial.headline||'').trim() };
+}
+
+function trialQualitativeNote(trial){
+  const results=(trial.results||[]);
+  const notes=results.map(r=>String(r.effect_or_note||'').trim()).filter(Boolean);
+  const base=String(trial.headline||'').trim();
+  const sig=notes.join(' ').match(/P\s*[<\u2264=]\s*0?\.\d+/i);
+  const metric=String((results[0]||{}).result_metric||'').trim();
+  const label=metric?`Improved ${metric.replace(/^IBV /,'IBV ')}`:base;
+  if(sig) return `${label} (${sig[0].replace(/\s+/g,'')})`;
+  return base;
+}
+
 function renderFieldExperienceHTML(productObj, context, selectedCountry) {
   const matches = getFieldExperienceMatches(productObj.id, context, selectedCountry);
   if (!matches.length) return '';
   return `<section class="field-experience">
-    ${fieldHighlight(matches[0])}
-    <details class="fe-collapse">
-      <summary>
-        <span>${fieldContextLabel(matches[0])}</span>
-        <span class="fe-count">${matches.length} trial${matches.length > 1 ? 's' : ''}</span>
-      </summary>
-      <div class="fe-collapse-body">
-        ${matches.map(trial => renderFieldTrial(trial)).join('')}
-      </div>
-    </details>
+    <div class="fe-head">
+      <div class="fe-overline">Proven results &mdash; field trials</div>
+      <span class="fe-count">${matches.length} trial${matches.length > 1 ? 's' : ''}</span>
+    </div>
+    <div class="fe-list">
+      ${matches.map((trial, idx) => {
+        const kpi = trialKpi(trial);
+        const headline = kpi.value
+          ? `<b>${fieldEscape(kpi.value)}</b><span>${fieldEscape(kpi.label)}</span>`
+          : `<b class="qual">${fieldEscape(trialQualitativeNote(trial))}</b>`;
+        return `<details class="fe-collapse"${idx === 0 ? ' open' : ''}>
+          <summary>
+            <span class="fe-kpi">${headline}</span>
+            <span class="fe-ctx">${fieldContextLabel(trial)}</span>
+          </summary>
+          <div class="fe-collapse-body">${renderFieldTrial(trial)}</div>
+        </details>`;
+      }).join('')}
+    </div>
   </section>`;
 }
