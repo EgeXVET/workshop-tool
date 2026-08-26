@@ -4217,7 +4217,8 @@ function selectedFieldCountry(){
 
 function productHighlightsHTML(p){
   if(typeof renderFieldExperienceHTML!=='function') return '';
-  const ctx=selectedTrialContext();
+  const pair=(state.pairings||[]).find(x=>x.id===p.id && x.kind==='challenge');
+  const ctx=Object.assign({}, selectedTrialContext(), pair?{preferredChallenge:pair.label}:{});
   const country=selectedFieldCountry();
   const ids=typeof productLookupIds==='function'?productLookupIds(p.id):[p.id];
   for(const id of ids){

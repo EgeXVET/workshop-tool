@@ -1,7 +1,9 @@
 /* Field Experience
    Source of truth: data/field_trials_master24_mapped.csv
    Challenge matching uses the mapped "Maps to Master 24" labels directly.
-   Matching and display are deterministic; no claims or calculations are generated. */
+   Result rows carry result_challenge + challenge_display_primary so the header
+   can follow the paired challenge. Matching and display are deterministic;
+   no claims or calculations are generated. */
 
 const FIELD_TRIALS_CSV_URL = 'data/field_trials_master24_mapped.csv';
 // Legacy field-trial source (disabled): data/XERP_Field_Trials_percent_standardized.csv
@@ -116,6 +118,8 @@ function indexFieldTrials(rows) {
       improvement_display_unit: row.improvement_display_unit || '',
       improvement_display_text: row.improvement_display_text || '',
       improvement_source: row.improvement_source || '',
+      result_challenge: String(row.result_challenge || '').trim(),
+      challenge_display_primary: csvYes(row.challenge_display_primary),
       front_display_eligible: csvYes(row.front_display_eligible),
       front_display_primary: csvYes(row.front_display_primary),
       headline_percent_value: row.headline_percent_value || '',
@@ -244,7 +248,7 @@ function renderFieldMetric(result) {
   </div>`;
 }
 
-function renderFieldTrial(trial) {
+function renderFieldTrial(trial, preferredChallenge) {
   const sample = trial.sample_size
     ? (/^\d+$/.test(trial.sample_size)
         ? Number(trial.sample_size).toLocaleString('en-US')
@@ -266,7 +270,7 @@ function renderFieldTrial(trial) {
   ].filter(Boolean);
   const metrics = strongestNumericResults(trial);
   return `<article class="fe-trial">
-    <h4>${fieldEscape(trialDisplayHeadline(trial))}</h4>
+    <h4>${fieldEscape(trialDisplayHeadline(trial, preferredChallenge))}</h4>
     <div class="fe-product">${fieldEscape(trial.display_product)}</div>
     <div class="fe-facts">${facts.map(fact => `<span>${fieldEscape(fact)}</span>`).join('')}</div>
     <div class="fe-summary-label">Customer summary</div>
@@ -275,8 +279,39 @@ function renderFieldTrial(trial) {
   </article>`;
 }
 
-function primaryFrontResult(trial) {
-  return (trial.results || []).find(result =>
+function resultChallenge(result) {
+  return String(result.result_challenge || '').trim();
+}
+
+function hasDisplayValue(result) {
+  return !!(String(result.improvement_display_value || '').trim()
+    || (result.percent_display_valid && String(result.headline_percent_text || '').trim()));
+}
+
+function preferredChallengeForTrial(trial, preferredChallenge) {
+  const wanted = String(preferredChallenge || '').trim();
+  const matching = trial.matchingChallenges || [];
+  if (wanted && matching.includes(wanted)) return wanted;
+  if (wanted && (trial.master_challenges || []).includes(wanted)) return wanted;
+  const withPrimary = matching.find(challenge =>
+    (trial.results || []).some(result =>
+      resultChallenge(result) === challenge && result.challenge_display_primary
+    )
+  );
+  return withPrimary || matching[0] || wanted;
+}
+
+function primaryFrontResult(trial, preferredChallenge) {
+  const results = trial.results || [];
+  const challenge = preferredChallengeForTrial(trial, preferredChallenge);
+  if (challenge) {
+    const tagged = results.filter(result => resultChallenge(result) === challenge);
+    return tagged.find(result => result.challenge_display_primary && hasDisplayValue(result))
+      || tagged.find(result => result.challenge_display_primary)
+      || tagged.find(hasDisplayValue)
+      || null;
+  }
+  return results.find(result =>
     result.front_display_primary
     && result.front_display_eligible
     && String(result.improvement_display_value || '').trim()
@@ -292,11 +327,9 @@ function percentHeadlineParts(result) {
   return { value, label, context };
 }
 
-function trialDisplayHeadline(trial) {
-  const primary = percentHeadlineParts(primaryFrontResult(trial));
-  if (primary) return primary.label ? `${primary.value} ${primary.label}` : primary.value;
-  const fallback = (trial.results || []).map(percentHeadlineParts).find(Boolean);
-  if (fallback) return fallback.label ? `${fallback.value} ${fallback.label}` : fallback.value;
+function trialDisplayHeadline(trial, preferredChallenge) {
+  const kpi = trialKpi(trial, preferredChallenge);
+  if (kpi.value) return kpi.label ? `${kpi.value} ${kpi.label}` : kpi.value;
   return trial.headline;
 }
 
@@ -354,8 +387,8 @@ function fieldBookletButton(trial) {
   </a>`;
 }
 
-function fieldHighlight(trial) {
-  const primary = primaryFrontResult(trial);
+function fieldHighlight(trial, preferredChallenge) {
+  const primary = primaryFrontResult(trial, preferredChallenge);
   const value = primary ? formatImprovementKpi(primary) : '';
   const label = primary ? formatImprovementLabel(primary) : '';
   if (!value) return '';
@@ -369,14 +402,17 @@ function fieldHighlight(trial) {
   </div>`;
 }
 
-function trialKpi(trial){
-  const primary=primaryFrontResult(trial);
+function trialKpi(trial, preferredChallenge){
+  const primary=primaryFrontResult(trial, preferredChallenge);
   if(primary){
     const v=formatImprovementKpi(primary);
     if(v) return { value:v, label:formatImprovementLabel(primary) };
   }
-  /* fall back to any numeric result carrying a display value */
-  const alt=(trial.results||[]).find(r=>String(r.improvement_display_value||'').trim());
+  const challenge=preferredChallengeForTrial(trial, preferredChallenge);
+  const pool=challenge
+    ? (trial.results||[]).filter(r=>resultChallenge(r)===challenge)
+    : (trial.results||[]);
+  const alt=pool.find(r=>String(r.improvement_display_value||'').trim());
   if(alt){
     const v=formatImprovementKpi(alt);
     if(v) return { value:v, label:formatImprovementLabel(alt) };
@@ -399,6 +435,7 @@ function trialQualitativeNote(trial){
 function renderFieldExperienceHTML(productObj, context, selectedCountry) {
   const matches = getFieldExperienceMatches(productObj.id, context, selectedCountry);
   if (!matches.length) return '';
+  const preferredChallenge = String(context.preferredChallenge || '').trim();
   return `<section class="field-experience">
     <div class="fe-head">
       <div class="fe-overline">Proven results &mdash; field trials</div>
@@ -406,7 +443,7 @@ function renderFieldExperienceHTML(productObj, context, selectedCountry) {
     </div>
     <div class="fe-list">
       ${matches.map((trial, idx) => {
-        const kpi = trialKpi(trial);
+        const kpi = trialKpi(trial, preferredChallenge);
         const headline = kpi.value
           ? `<b>${fieldEscape(kpi.value)}</b><span>${fieldEscape(kpi.label)}</span>`
           : `<b class="qual">${fieldEscape(trialQualitativeNote(trial))}</b>`;
@@ -416,7 +453,7 @@ function renderFieldExperienceHTML(productObj, context, selectedCountry) {
             <span class="fe-ctx">${fieldContextLabel(trial)}</span>
             ${fieldBookletButton(trial)}
           </summary>
-          <div class="fe-collapse-body">${renderFieldTrial(trial)}</div>
+          <div class="fe-collapse-body">${renderFieldTrial(trial, preferredChallenge)}</div>
         </details>`;
       }).join('')}
     </div>
