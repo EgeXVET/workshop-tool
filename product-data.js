@@ -2,7 +2,7 @@
    Product metadata source: data/product_scoring_master.csv
    Challenge source: data/product_challenge_classification_v3.csv
    Primary and secondary challenges both participate in matching and scoring.
-   BCG categories are verified from XVET Product Analysis (1).csv only — unclassified products get the default score. */
+   BCG categories are verified from XVET Product Analysis (1).csv only — unclassified products score 0. */
 
 const PRODUCT_SCORING_CSV_URL = 'data/product_scoring_master.csv';
 const PRODUCT_CHALLENGES_CSV_URL = 'data/product_challenge_classification_v3.csv';
@@ -35,6 +35,7 @@ const BCG_CATEGORY = {
   'zincotin':'QUESTION MARK',
   'vitaquamix':'QUESTION MARK',
   'metavolin-herbal':'PET',
+  'toxi-guard-protect-se':'PET',
   'aromax-dry':'PET',
   'bacflora-br':'PET',
   'vitamin-e-se':'PET',
@@ -88,7 +89,7 @@ function csvParts(value) {
 function csvForm(value) {
   const raw = String(value || '').trim();
   if (/liquid/i.test(raw)) return 'Liquid';
-  if (/soluble/i.test(raw)) return 'Water-soluble';
+  if (/^(wsp)$/i.test(raw) || /soluble/i.test(raw)) return 'Water-Soluble Powder';
   if (/powder/i.test(raw)) return 'Powder';
   return raw;
 }
@@ -120,7 +121,9 @@ function csvSpecies(row, mainChallenge) {
   if (csvFlag(row['Poultry'] || row['Poultry '])) { species.push('b', 'l'); }
   if (csvFlag(row.Ruminants)) species.push('r');
   if (csvFlag(row.Swine)) species.push('s');
-  if (/aquaculture/i.test(mainChallenge) && !species.includes('a')) species.push('a');
+  if (csvFlag(row.Aquaculture) || /aquaculture/i.test(mainChallenge || '')) {
+    if (!species.includes('a')) species.push('a');
+  }
   return species;
 }
 
@@ -170,6 +173,14 @@ function applyProductChallenges(products, challengeRows) {
     product.primaryChallenge = primary;
     product.secondaryChallenges = secondary;
     product.ch = [...new Set([primary, ...secondary].filter(Boolean))];
+    const form = csvForm(row.Form);
+    if (form) product.form = form;
+    product.species = csvSpecies(row, primary);
+    const group = csvGroup(row['Product Group']);
+    if (group) product.group = group;
+    const positioning = String(row.Positioning || '').trim().toUpperCase();
+    if (positioning === 'ENTRY' || positioning === 'GROWTH')
+      product.newCustomerCategory = positioning;
   });
 }
 

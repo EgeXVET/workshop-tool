@@ -97,6 +97,7 @@ function indexFieldTrials(rows) {
         customer_facing_summary: row.customer_facing_summary,
         source_pdf_pages: row.source_pdf_pages,
         source_document: row.source_document,
+        source_booklet_url: String(row.source_booklet_url || '').trim(),
         results: []
       });
     }
@@ -340,6 +341,19 @@ function fieldContextLabel(trial) {
   return `${fieldEscape(trial.display_product)} | ${fieldEscape(trial.country)}${trial.year ? ` | ${fieldEscape(trial.year)}` : ''}`;
 }
 
+function fieldBookletButton(trial) {
+  const url = String(trial.source_booklet_url || '').trim();
+  if (!url) return '';
+  return `<a class="fe-booklet" href="${fieldEscape(url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Open this field trial in the booklet">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5.2c-2.3-1.4-5.4-1.7-8.2-.6v13.2c2.8-1.1 5.9-.8 8.2.6"/>
+      <path d="M12 5.2c2.3-1.4 5.4-1.7 8.2-.6v13.2c-2.8-1.1-5.9-.8-8.2.6"/>
+      <path d="M12 5.2v13.2"/>
+    </svg>
+    <span>Open trial</span>
+  </a>`;
+}
+
 function fieldHighlight(trial) {
   const primary = primaryFrontResult(trial);
   const value = primary ? formatImprovementKpi(primary) : '';
@@ -400,6 +414,7 @@ function renderFieldExperienceHTML(productObj, context, selectedCountry) {
           <summary>
             <span class="fe-kpi">${headline}</span>
             <span class="fe-ctx">${fieldContextLabel(trial)}</span>
+            ${fieldBookletButton(trial)}
           </summary>
           <div class="fe-collapse-body">${renderFieldTrial(trial)}</div>
         </details>`;
