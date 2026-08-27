@@ -3661,7 +3661,9 @@ async function renderMarket(){
      species and format as eligibility gates
      stated problems, field evidence, BCG priority, country priority,
      and new-customer fit as the score (Entry +5, Growth 0)
-     products pre-selected before the meeting override automatic ranking
+     pairing always fills every selected challenge slot from ranking
+     a preselect that already won a slot stays there; otherwise it sits under
+     the matching challenge (primary first) or above the five if it matches none
      pairing scores each slot for that challenge only (primary then secondary)
      BCG applies only when classified (unclassified 0); other selected challenges do not
    FAOSTAT market size and customer-channel types are not used.
@@ -3785,30 +3787,47 @@ function rankProductsForChallenge(challenge){
                  .sort(compareProductRank);
 }
 function pairProducts(){
-  const ranked=rankProducts();
+  const selected=vals('challenges');
   const used=new Set();
-  const pairings=[];
-  const add=(p,kind,label)=>{
-    if(!p||used.has(p.id)||pairings.length>=MAX_SELECT) return false;
-    used.add(p.id);
-    pairings.push({id:p.id,kind,label});
-    return true;
-  };
-  (state.preselect||[]).forEach(id=>{
-    const p=ranked.find(x=>x.id===id)||PRODUCTS.find(x=>x.id===id);
-    if(p) add(p,'preselect','Requested before the workshop');
-  });
-  vals('challenges').forEach(ch=>{
+  const slotIds={};
+  selected.forEach(ch=>{ slotIds[ch]=''; });
+
+  selected.forEach(ch=>{
     const bySlot=rankProductsForChallenge(ch);
     const open=p=>p.eligible&&!used.has(p.id);
     const pick=bySlot.find(p=>open(p)&&isPrimaryChallenge(p,ch))
       || bySlot.find(p=>open(p)&&(p.ch||[]).includes(ch));
-    if(pick) add(pick,'challenge',ch);
-    if(!pairings.some(x=>x.kind==='challenge' && x.label===ch))
-      pairings.push({id:'',kind:'challenge',label:ch});
+    if(pick){
+      slotIds[ch]=pick.id;
+      used.add(pick.id);
+    }
   });
-  state.pairings=pairings;
-  state.selected=pairings.map(x=>x.id).filter(Boolean);
+
+  const extraTop=[];
+  const attached=[];
+  const winners=new Set(Object.values(slotIds).filter(Boolean));
+  (state.preselect||[]).forEach(id=>{
+    const p=PRODUCTS.find(x=>x.id===id);
+    if(!p) return;
+    if(winners.has(id)) return;
+    const hits=selected.filter(ch=>(p.ch||[]).includes(ch));
+    if(!hits.length){
+      extraTop.push(id);
+      return;
+    }
+    const slot=hits.find(ch=>isPrimaryChallenge(p,ch)) || hits[0];
+    attached.push({id,label:slot});
+  });
+
+  state.pairings=extraTop.map(id=>({id,kind:'preselect',label:'Requested before the workshop'}))
+    .concat(selected.flatMap(ch=>{
+      const rows=[{id:slotIds[ch]||'',kind:'challenge',label:ch}];
+      attached.filter(x=>x.label===ch).forEach(x=>{
+        rows.push({id:x.id,kind:'preselect',label:ch,attached:true});
+      });
+      return rows;
+    }));
+  state.selected=[...new Set(state.pairings.map(x=>x.id).filter(Boolean))];
   state.added=[];
 }
 function runSelection(){
@@ -3950,13 +3969,8 @@ function shortlistReason(p, pair){
     )[0];
     const others=hits.length-1;
     parts.push(`Covers <b>${escapeHtml(best)}</b>${others>0?`, and ${others} further ${others===1?'challenge':'challenges'} named today`:''}.`);
-    const ctx=(typeof challengeContextFor==='function')?challengeContextFor(p,best):{text:null};
-    if(ctx && ctx.text) parts.push(`In this type of operation ${ctx.text}.`);
   }else{
-    const shares=(typeof speciesShareText==='function')?(speciesShareText(p)||[]):[];
-    parts.push(shares.length
-      ? `Fits the species split &mdash; ${shares.map(x=>`${x.label} (${x.share}%)`).join(', ')} &mdash; and the market data, rather than a specific challenge named today.`
-      : 'Selected on the fit with the market data and the product range.');
+    parts.push('Selected on the fit with the market data and the product range.');
   }
   return parts.join(' ');
 }
@@ -4058,14 +4072,20 @@ function renderSelection(){
     const pair=pairings.find(x=>x.kind==='challenge' && x.label===ch) || {id:'',kind:'challenge',label:ch};
     const p=pair.id ? ranked.find(x=>x.id===pair.id) : null;
     if(p) used.add(p.id);
-    const body=p ? slotFilledHTML(p,pair,wait) : slotEmptyHTML(ch);
+    const winner=p ? slotFilledHTML(p,pair,wait) : slotEmptyHTML(ch);
+    const under=pairings.filter(x=>x.attached && x.label===ch && x.id && x.id!==pair.id).map(x=>{
+      const u=ranked.find(r=>r.id===x.id)||PRODUCTS.find(r=>r.id===x.id);
+      if(!u) return '';
+      used.add(u.id);
+      return slotFilledHTML(u,x,wait);
+    }).filter(Boolean).join('');
     return `<div class="slotblock">
       <div class="slothead">${challengeIcon(ch)}<span>${escapeHtml(ch)}</span></div>
-      ${body}
+      ${winner}${under}
     </div>`;
   });
 
-  const extraPairs=pairings.filter(pair=>pair.id && pair.kind!=='challenge' && !used.has(pair.id));
+  const extraPairs=pairings.filter(pair=>pair.id && pair.kind==='preselect' && !pair.attached && !used.has(pair.id));
   const extraCards=extraPairs.map(pair=>{
     const p=ranked.find(x=>x.id===pair.id)||PRODUCTS.find(x=>x.id===pair.id);
     if(!p) return '';
@@ -4089,7 +4109,10 @@ function renderSelection(){
     </div>`;
   }).filter(Boolean);
 
-  document.getElementById('selGrid').innerHTML=challengeBlocks.concat(extraCards, addedCards).join('')
+  const extraBlock=extraCards.length
+    ? `<div class="slotblock"><div class="slothead"><span>Named before the workshop</span></div>${extraCards.join('')}</div>`
+    : '';
+  document.getElementById('selGrid').innerHTML=[extraBlock, ...challengeBlocks, ...addedCards].filter(Boolean).join('')
     || '<p>No products selected. Go back and run the shortlist again.</p>';
   updateSelCounter();
   renderMoreGrid();
@@ -4217,7 +4240,8 @@ function selectedFieldCountry(){
 
 function productHighlightsHTML(p){
   if(typeof renderFieldExperienceHTML!=='function') return '';
-  const pair=(state.pairings||[]).find(x=>x.id===p.id && x.kind==='challenge');
+  const pair=(state.pairings||[]).find(x=>x.id===p.id && x.kind==='challenge')
+    || (state.pairings||[]).find(x=>x.id===p.id && x.attached);
   const ctx=Object.assign({}, selectedTrialContext(), pair?{preferredChallenge:pair.label}:{});
   const country=selectedFieldCountry();
   const ids=typeof productLookupIds==='function'?productLookupIds(p.id):[p.id];
@@ -4234,33 +4258,6 @@ function productHighlightsHTML(p){
    Built from what was actually said and what the market data shows,
    never from a generic template.
    ======================================================================= */
-
-/* what is typically behind a challenge in a given species — used only to
-   explain a market-driven pick, always phrased as a general observation */
-const CHALLENGE_CONTEXT={
- 'Respiratory Challenges':{b:'respiratory pressure is the most common reason for medication in broiler production, especially where houses are naturally ventilated',l:'respiratory pressure around vaccination is a recurring cost in layer rearing',s:'respiratory disease is the leading health cost in growing-finishing units'},
- 'Mycotoxin Pressure':{b:'mycotoxin contamination in locally sourced maize and soya is a structural problem in warm, humid climates',l:'mycotoxins reduce egg output and shell quality long before clinical signs appear',r:'mycotoxins in silage and concentrate reduce intake and milk yield',s:'sows and piglets react to mycotoxin levels far below the limits set for other species'},
- 'Feed Preservation & Mould':{b:'feed stored in high humidity loses quality within days',l:'feed quality decides shell strength as much as the mineral programme does',r:'silage and stored concentrate carry the highest fungal load on the farm',s:'wet feeding systems are the most exposed point for mould growth'},
- 'Gut Health & Digestion':{b:'gut health decides feed conversion and litter quality in the same cycle',l:'a stable gut carries persistency through the second half of the laying period',r:'rumen stability decides how much of the ration is actually converted',s:'post-weaning gut disturbance is the single most expensive event in the nursery'},
- 'Antibiotic Reduction / NAGP':{b:'buyers and regulators are moving faster than the market is prepared for',l:'residue limits in eggs leave very little room for therapeutic use',r:'withdrawal periods make antibiotic use in milking cows expensive twice over',s:'the phase-out of antibiotic growth promoters is furthest advanced in swine'},
- 'Heat Stress & Dehydration':{b:'heat stress costs weight gain and livability every season, predictably',l:'egg size and shell quality drop first when birds are heat stressed',r:'milk yield falls within days of a heat event and recovers slowly'},
- 'Mortality & Livability':{b:'mortality is the number every farm manager is measured on',l:'losses in the laying period are never recovered',s:'pre-weaning losses set the ceiling for the whole batch'},
- 'Eggshell & Egg Quality':{l:'shell quality decides how much of the production is actually sold'},
- 'Egg Production & Performance':{l:'persistency in the second half of lay is where the margin sits'},
- 'Milk & Lactation Performance':{r:'milk yield is measured daily, so the effect of any change is visible immediately'},
- 'Leg Problems & Lameness':{b:'lameness culling in heavy males is a direct and countable loss',l:'cage fatigue and prolapse losses rise sharply in the late laying period'},
- 'Liver & Metabolic Health':{b:'liver damage is the visible consequence of high mycotoxin and antibiotic load',l:'fatty liver is a leading cause of sudden death in high-producing hens',r:'the transition period decides the whole lactation'},
- 'Kidney & Renal Health':{b:'kidney damage follows almost every intensive antibiotic treatment'},
- 'Early-Life & Young-Animal Support':{r:'losses in the first weeks are the most expensive on any rearing operation',s:'the first two weeks after weaning determine the finishing result'},
- 'Growth & Feed Efficiency':{b:'feed is the largest single cost, so feed conversion is where the margin is made',s:'feed conversion decides profitability in the finishing phase'},
- 'Feed Intake & Appetite':{b:'intake is the first thing that drops in any challenge situation',r:'dry matter intake is the limiting factor in early lactation'},
- 'Pathogen Pressure':{b:'water lines are the cheapest point of intervention and the most often neglected'},
- 'Carcass Quality & Physical Damage':{b:'carcass rejection is a line item the integrator already measures in money'},
- 'Mineral Deficiency & Calcium Balance':{l:'calcium demand in peak lay exceeds what the ration alone can cover'},
- 'Stress & Recovery':{b:'recovery speed after a challenge decides whether the cycle result is saved or lost'},
- 'Immunity Support':{b:'vaccination only works if the bird can respond to it'},
- 'Vitamin & Nutrient Deficiency':{b:'deficiency shows as reduced performance long before it shows as a clinical sign'}
-};
 
 function speciesShareText(p){
   const keys=selectedSpeciesKeys().filter(k=>(p.species||[]).includes(k));
@@ -4298,27 +4295,11 @@ function marketNoteFor(p, preferKey){
   return null;
 }
 
-function challengeContextFor(p, challenge){
-  const ctx=CHALLENGE_CONTEXT[challenge];
-  if(!ctx) return {text:null,key:null};
-  const shares=speciesShareText(p)||[];
-  for(const sp of shares){ if(ctx[sp.k]) return {text:ctx[sp.k], key:sp.k}; }
-  const k=Object.keys(ctx)[0];
-  return {text:ctx[k]||null, key:k||null};
-}
-
 function selectionRationale(p){
   const pair=(state.pairings||[]).find(x=>x.id===p.id);
   const kind=p.added?'added':(pair?pair.kind:'fill');
-  const shares=speciesShareText(p)||[];
-  const shareParts=shares.map(x=>x.share?`${x.label} (${x.share}%)`:x.label);
-  const shareTxt=shareParts.length
-    ? (shareParts.length===1 ? shareParts[0]
-       : shareParts.slice(0,-1).join(', ')+' and '+shareParts[shareParts.length-1])
-    : null;
 
   const lines=[];
-  let preferKey=null;
   let head='Why this product is in the selection';
 
   if(kind==='added'){
@@ -4339,22 +4320,12 @@ function selectionRationale(p){
     let t=`Selected because it addresses <b>${escapeHtml(best)}</b>, one of the challenges named for this business.`;
     if(others.length) t+=` It also covers ${others.map(x=>escapeHtml(x)).join(' and ')}.`;
     lines.push(t);
-    const ctx=challengeContextFor(p,best);
-    if(ctx.text) lines.push(`In this type of operation ${ctx.text}.`);
-    preferKey=ctx.key;
   }else if(kind!=='added' && kind!=='preselect'){
     lines.push('Selected on the fit with the species split and the market, rather than a specific challenge named today.');
   }
 
-  /* species and share */
-  if(shareTxt && kind!=='added'){
-    lines.push(shares.length>1
-      ? `It is used across ${shareTxt} of this business.`
-      : `It is used in ${shareTxt} of this business.`);
-  }
-
   /* market size */
-  const mk=marketNoteFor(p, preferKey);
+  const mk=marketNoteFor(p);
   if(mk && kind!=='added') lines.push(mk);
 
   /* evidence */

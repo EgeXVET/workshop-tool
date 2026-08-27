@@ -163,11 +163,22 @@ async function loadFieldTrialsCSV() {
   }
 }
 
+function compareFieldTrials(a, b) {
+  const aKpi = a.hasChallengeKpi ? 1 : 0;
+  const bKpi = b.hasChallengeKpi ? 1 : 0;
+  return bKpi - aKpi
+    || b.score - a.score
+    || b.speciesShare - a.speciesShare
+    || (Number(b.year) || 0) - (Number(a.year) || 0)
+    || a.trial_id.localeCompare(b.trial_id);
+}
+
 function getFieldExperienceMatches(productId, context, selectedCountry) {
   if (!FIELD_TRIALS_LOADED || !productId) return [];
   const shares = context.speciesShares || {};
   const selectedSpecies = Object.keys(shares).filter(species => shares[species] > 0);
   const selectedChallenges = context.challenges || [];
+  const preferredChallenge = String(context.preferredChallenge || '').trim();
   if (!selectedSpecies.length) return [];
 
   const ranked = FIELD_TRIALS
@@ -180,23 +191,22 @@ function getFieldExperienceMatches(productId, context, selectedCountry) {
 
       const speciesShare = Math.max(...matchingSpecies.map(species => shares[species] || 0));
       const sameCountry = String(trial.country).toLowerCase() === String(selectedCountry || '').toLowerCase();
+      const matched = { ...trial, matchingSpecies, matchingChallenges };
+      const kpi = trialKpi(matched, preferredChallenge);
+      const hasChallengeKpi = !!(kpi && kpi.value);
       const score = 100 + 60 + (80 * matchingChallenges.length)
-        + trial.evidence_strength + (sameCountry ? 10 : 0);
-      return { ...trial, score, speciesShare, matchingSpecies, matchingChallenges };
+        + trial.evidence_strength + (sameCountry ? 10 : 0)
+        + (hasChallengeKpi ? 50 : 0);
+      return { ...matched, score, speciesShare, hasChallengeKpi };
     })
     .filter(Boolean)
-    .sort((a, b) =>
-      b.score - a.score
-      || b.speciesShare - a.speciesShare
-      || (Number(b.year) || 0) - (Number(a.year) || 0)
-      || a.trial_id.localeCompare(b.trial_id)
-    );
+    .sort(compareFieldTrials);
 
   const base = ranked.slice(0, FIELD_TRIAL_LIMIT);
   const extras = ranked.slice(FIELD_TRIAL_LIMIT)
     .filter(trial => trial.score >= FIELD_TRIAL_STRONG_MIN_SCORE)
     .slice(0, FIELD_TRIAL_LIMIT_STRONG - FIELD_TRIAL_LIMIT);
-  return base.concat(extras);
+  return base.concat(extras).sort(compareFieldTrials);
 }
 
 function fieldEscape(value) {
