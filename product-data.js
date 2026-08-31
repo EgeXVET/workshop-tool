@@ -137,6 +137,7 @@ function mapProductRow(row) {
   const group = csvGroup(row.Category);
   const positioning = String(row.Positioning || '').trim().toUpperCase();
   const description = String(row.Description || '').trim();
+  const elevator = String(row.Elevator || '').trim();
   const tagline = String(row.Tagline || '').trim() || core[0] || mainChallenge || '';
   const hasWebsitePage = Boolean(String(row['Website slug'] || '').trim());
   return {
@@ -145,6 +146,7 @@ function mapProductRow(row) {
     group,
     form,
     tagline,
+    elevator,
     solutions: core.slice(0, 3),
     species: csvSpecies(row, mainChallenge),
     img: hasWebsitePage ? 'assets/' + id + '.png' : '',
