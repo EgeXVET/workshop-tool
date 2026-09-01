@@ -1165,6 +1165,9 @@ body.presenting .internal-note{display:none}
 .democlear{border:1px solid #E9C9B8;background:#fff;color:#B93C10;border-radius:11px;padding:0 16px;
   font-size:12.5px;font-weight:600;align-self:center;height:40px}
 .democlear:hover{border-color:var(--rd);color:var(--rd)}
+.demonew{border:1px solid #B7D8BE;background:#fff;color:var(--xg);border-radius:11px;padding:0 16px;
+  font-size:12.5px;font-weight:600;align-self:center;height:40px}
+.demonew:hover{border-color:var(--xg);background:var(--soft)}
 body.presenting .demorow{display:none}
 .demotoast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);z-index:200;
   background:var(--xg);color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:600;
@@ -1174,7 +1177,7 @@ body.presenting .demorow{display:none}
   .demorow>*{flex:1 1 100%}
   .demobtn{white-space:normal;justify-content:flex-start}
   .demosel{min-width:0;width:100%}
-  .democlear{width:100%;padding:11px 16px}
+  .democlear,.demonew{width:100%;padding:11px 16px}
 }
 
 .whybox{margin:0 22px 18px;border:1px solid #CFE3D4;border-left:4px solid var(--xg-l);border-radius:14px;
@@ -1220,15 +1223,35 @@ body.presenting .ownerbar{display:none}
 #tProdWrap .prodname{font-size:26px;margin:2px 0 3px}
 #tProdWrap .prodspecs{padding:10px 18px;gap:8px 14px}
 #tProdWrap .prodbody{padding:14px 18px 16px;gap:16px}
-#tProdWrap .whybox{margin:0 18px 12px;padding:12px 15px}
-#tProdWrap .whybox li{font-size:12.5px;line-height:1.45}
 #tProdWrap .arglist{gap:6px}
 #tProdWrap .arglist li{padding:9px 12px 9px 34px;font-size:12.5px}
 #tProdWrap .arglist li:before{top:13px}
 #tProdWrap .benlist li{font-size:12.5px}
 #tProdWrap h4{font-size:14px;margin-bottom:6px}
-#tProdWrap .field-experience{margin-top:2px}
+#tProdWrap .field-experience{margin:2px 0 0}
 #tProdWrap .eyebrow{margin-bottom:6px}
+
+.label-stack{display:grid;gap:8px;padding:0 18px 18px}
+.label-acc{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.label-acc>summary{list-style:none;display:flex;align-items:center;gap:12px;
+  padding:13px 16px;cursor:pointer;font-size:14px;font-weight:650;color:var(--ink)}
+.label-acc>summary::-webkit-details-marker{display:none}
+.label-acc>summary:after{content:"\2304";margin-left:auto;color:var(--xg);font-size:16px;line-height:1}
+.label-acc[open]>summary{border-bottom:1px solid var(--line);background:var(--soft)}
+.label-acc[open]>summary:after{content:"\2303"}
+.label-acc-body{padding:14px 16px 16px;font-size:13.5px;line-height:1.55;color:#33463B}
+.label-acc-body p{margin:0}
+.label-empty{margin:0;color:var(--muted);font-style:italic}
+.label-table{width:100%;border-collapse:collapse}
+.label-table td{padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+.label-table tr:last-child td{border-bottom:none}
+.label-table td:last-child{text-align:right;font-weight:600;white-space:nowrap;padding-left:16px;color:var(--ink)}
+.label-group{margin:0 0 14px}
+.label-group:last-child{margin:0}
+.label-group .g{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--xg);margin-bottom:6px}
+.label-group ul{margin:0;padding:0 0 0 18px}
+.label-group li{margin:4px 0;line-height:1.45}
 
 .regdocadd{display:flex;gap:8px;margin-top:10px}
 .regdocadd input{flex:1 1 auto;padding:8px 10px;font-size:12.5px}
@@ -1299,10 +1322,12 @@ body.presenting .internal-only{display:none}
           </span>
         </button>
         <select id="demoPick" class="demosel" onchange="loadDemo()">
-          <option value="0">Delta Feed Trading &middot; Egypt &middot; broiler + layer &middot; fully qualified</option>
-          <option value="1">Mekong Livestock &middot; Viet Nam &middot; swine-led &middot; decision maker absent</option>
-          <option value="2">Sahel Agrivet &middot; Nigeria &middot; layer + dairy &middot; knock-out demo</option>
+          <option value="demo:0">Solano Veterinary &middot; Philippines &middot; broiler + layer + aqua</option>
+          <option value="demo:1">Delta Feed Trading &middot; Egypt &middot; broiler + layer &middot; fully qualified</option>
+          <option value="demo:2">Mekong Livestock &middot; Viet Nam &middot; swine-led &middot; decision maker absent</option>
+          <option value="demo:3">Sahel Agrivet &middot; Nigeria &middot; layer + dairy &middot; knock-out demo</option>
         </select>
+        <button class="demonew" type="button" onclick="newSavedProfile()" title="Create a blank customer. Everything you enter is saved in this browser.">New profile</button>
         <button class="democlear" onclick="clearDemo()">Reset</button>
       </div>
     </div>
@@ -1754,7 +1779,7 @@ body.presenting .internal-only{display:none}
         </div>
         <div class="profile-notes">
           <label for="profileComments">Workshop notes</label>
-          <textarea id="profileComments" placeholder="Add comments here"></textarea>
+          <textarea id="profileComments" placeholder="Add comments here" oninput="syncProfile()"></textarea>
         </div>
       </aside>
     </div>
@@ -2172,7 +2197,7 @@ body.presenting .internal-only{display:none}
     <div class="layout">
     <div class="panel">
       <div class="eyebrow">Technical meeting &middot; Step 1</div>
-      <h2>Where we stand</h2>
+      <h2>Technical Meeting</h2>
       <p class="lead">A short recap of the introduction meeting, then a chance to adjust the shortlist before the product deep dive.</p>
 
       <h4 style="margin-top:18px">Who is in the meeting</h4>
@@ -2263,22 +2288,9 @@ body.presenting .internal-only{display:none}
     <div class="eyebrow">Technical meeting &middot; Step 3</div>
     <h2>Product deep dive</h2>
     <p class="lead" style="margin-bottom:14px">Composition, mode of action, dosage and application &mdash; product by
-      product, with the evidence behind each claim.</p>
+      product, with the evidence behind each claim. Open the label sections for activity, constituents, additives,
+      composition and feeding recommendation.</p>
 
-    <div class="ownerbar">
-      <div class="ob-l">
-        <span class="ob-tag">Internal</span>
-        <div>
-          <b>Dosage and application content is still being written.</b>
-          <span>Each product below carries a placeholder until the programme per species and production phase is
-            documented. Everything else on this screen comes from the product and trial data.</span>
-        </div>
-      </div>
-      <div class="ob-r">
-        <label>Content owner</label>
-        <input id="tContentOwner" placeholder="Name" oninput="state.contentOwner=this.value;renderTechProducts()">
-      </div>
-    </div>
     <div class="proofbar" id="tProofBar"></div>
     <div class="jumpbar" id="tJumpBar"></div>
     <div id="tProdWrap"></div>
@@ -2806,6 +2818,8 @@ body.presenting .internal-only{display:none}
 <script src="data/product_scoring_embed.js"></script>
 <script src="data/product_challenges_embed.js"></script>
 <script src="product-data.js"></script>
+<script src="data/product_labels_embed.js"></script>
+<script src="product-labels.js"></script>
 
 <script>
 /* =======================================================================
@@ -3140,7 +3154,7 @@ const SPECIES=[
 ];
 const MAX_SELECT=5;
 
-const state={ split:{b:0,l:0,r:0,s:0,a:0}, preselect:[], selected:[], pairings:[], added:[], qual:{}, primaryBusiness:[], partnerTeam:[], tmDirectorIds:[], tmVetIds:[], tmAMIds:[] };
+const state={ split:{b:0,l:0,r:0,s:0,a:0}, preselect:[], selected:[], pairings:[], added:[], qual:{}, primaryBusiness:[], partnerTeam:[], tmDirectorIds:[], tmVetIds:[], tmAMIds:[], activeSavedId:'' };
 const PRIMARY_BUSINESS_OPTIONS=['Feed Mill','Integrator','Distributor','Farm','Veterinary Service/Practice','Veterinary'];
 const XVET_TEAM=[
   {id:'salih',name:'Salih Gündüz',role:'Founder & President',img:'assets/team/salih.webp'},
@@ -4044,6 +4058,7 @@ function syncProfile(){
   g('pSpecies').textContent=speciesText();
   g('pFormats').textContent=joined('formats');
   g('pChallenges').textContent=selectedChallenges().join('  \u00b7  ')||'\u2014';
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
 }
 
 async function copyCustomerProfile(ev){
@@ -4196,6 +4211,8 @@ async function renderMarket(){
      stated problems, field evidence, BCG priority, country priority,
      and new-customer fit as the score (Entry +5, Growth 0)
      pairing always fills every selected challenge slot from ranking
+     one product per slot, except a product may occupy a second slot when it is
+     the top-ranked pick for that challenge too (at most two slots)
      a preselect that already won a slot stays there; otherwise it sits under
      the matching challenge (primary first) or above the five if it matches none
      pairing scores each slot for that challenge only (primary then secondary)
@@ -4339,20 +4356,32 @@ function rankProductsForChallenge(challenge){
   return PRODUCTS.map(p=>{const r=scoreProduct(p,challenge);return {...p,...r}})
                  .sort(compareProductRank);
 }
+const MAX_SLOTS_PER_PRODUCT=2;
+function pairingHasProduct(id){
+  return (state.pairings||[]).some(x=>x && x.id===id);
+}
+function pickForChallenge(challenge, slotCount){
+  const bySlot=rankProductsForChallenge(challenge);
+  const covers=p=>p.eligible && (p.ch||[]).includes(challenge);
+  const underCap=p=>covers(p) && (slotCount.get(p.id)||0)<MAX_SLOTS_PER_PRODUCT;
+  const top=bySlot.find(p=>covers(p)&&isPrimaryChallenge(p,challenge))
+    || bySlot.find(p=>covers(p));
+  if(!top) return null;
+  if((slotCount.get(top.id)||0)<MAX_SLOTS_PER_PRODUCT) return top;
+  return bySlot.find(p=>underCap(p)&&isPrimaryChallenge(p,challenge))
+    || bySlot.find(p=>underCap(p));
+}
 function pairProducts(){
   const selected=vals('challenges');
-  const used=new Set();
+  const slotCount=new Map();
   const slotIds={};
   selected.forEach(ch=>{ slotIds[ch]=''; });
 
   selected.forEach(ch=>{
-    const bySlot=rankProductsForChallenge(ch);
-    const open=p=>p.eligible&&!used.has(p.id);
-    const pick=bySlot.find(p=>open(p)&&isPrimaryChallenge(p,ch))
-      || bySlot.find(p=>open(p)&&(p.ch||[]).includes(ch));
+    const pick=pickForChallenge(ch, slotCount);
     if(pick){
       slotIds[ch]=pick.id;
-      used.add(pick.id);
+      slotCount.set(pick.id, (slotCount.get(pick.id)||0)+1);
     }
   });
 
@@ -4383,6 +4412,7 @@ function pairProducts(){
     }));
   state.selected=[...new Set(state.pairings.map(x=>x.id).filter(Boolean))];
   state.added=[];
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
 }
 function runSelection(){
   pairProducts();
@@ -4544,9 +4574,9 @@ function shortlistReason(p, pair){
 }
 
 function candidatesForChallenge(label){
-  const used=new Set((state.selected||[]).filter(Boolean));
+  const onThis=new Set((state.pairings||[]).filter(x=>x.kind==='challenge'&&x.label===label&&x.id).map(x=>x.id));
   return rankProductsForChallenge(label).filter(p=>
-    p.eligible && !used.has(p.id) && (p.ch||[]).includes(label)
+    p.eligible && !onThis.has(p.id) && (p.ch||[]).includes(label)
   ).sort((a,b)=>{
     const pa=isPrimaryChallenge(a,label)?1:0, pb=isPrimaryChallenge(b,label)?1:0;
     if(pb!==pa) return pb-pa;
@@ -4560,8 +4590,10 @@ function vacateChallengeSlot(label){
   if(state.preselect.includes(pair.id)) return;
   const id=pair.id;
   pair.id='';
-  state.selected=(state.selected||[]).filter(x=>x!==id);
+  if(!pairingHasProduct(id) && !(state.added||[]).includes(id))
+    state.selected=(state.selected||[]).filter(x=>x!==id);
   renderSelection();
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
 }
 
 function assignChallengeProduct(label, productId){
@@ -4569,12 +4601,14 @@ function assignChallengeProduct(label, productId){
   if(!pair || !productId) return;
   const p=PRODUCTS.find(x=>x.id===productId);
   if(!p) return;
-  if(pair.id && !state.preselect.includes(pair.id))
-    state.selected=(state.selected||[]).filter(x=>x!==pair.id);
+  const prev=pair.id;
   pair.id=productId;
+  if(prev && prev!==productId && !state.preselect.includes(prev) && !pairingHasProduct(prev) && !(state.added||[]).includes(prev))
+    state.selected=(state.selected||[]).filter(x=>x!==prev);
   if(!state.selected.includes(productId)) state.selected.push(productId);
   state.added=(state.added||[]).filter(x=>x!==productId);
   renderSelection();
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
 }
 
 function slotEmptyHTML(label){
@@ -4744,6 +4778,7 @@ function toggleAdded(id){
   if(i>-1) state.added.splice(i,1); else state.added.push(id);
   if(document.getElementById('selGrid')) renderSelection();
   else { renderMoreGrid(); updateSelCounter(); }
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
 }
 const SPECIES_KEY_FALLBACK = {
   b:['broiler'], l:['layer'], r:['ruminant'],
@@ -5109,10 +5144,40 @@ function renderProofBar(hostId){
     <div class="pb-t">German manufacturing, registration dossiers prepared per market, consolidated shipments
       from Hamburg.</div>`;
 }
+function labelAccHTML(title, inner){
+  const body=inner
+    ? `<div class="label-acc-body">${inner}</div>`
+    : `<div class="label-acc-body"><p class="label-empty">Not stated on the product label.</p></div>`;
+  return `<details class="label-acc">
+    <summary>${escapeHtml(title)}</summary>
+    ${body}
+  </details>`;
+}
+function productLabelHTML(p){
+  const L=typeof getProductLabel==='function'?getProductLabel(p.id):null;
+  const activity=L && L.activity ? `<p>${escapeHtml(L.activity)}</p>` : '';
+  const rows=(L && L.analyticalConstituents)||[];
+  const analytical=rows.length
+    ? `<table class="label-table">${rows.map(r=>
+        `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.value)}</td></tr>`).join('')}</table>`
+    : '';
+  const groups=(L && L.additives)||[];
+  const additives=groups.length
+    ? groups.map(g=>`<div class="label-group"><div class="g">${escapeHtml(g.group)}</div>
+        <ul>${(g.items||[]).map(it=>`<li>${escapeHtml(it)}</li>`).join('')}</ul></div>`).join('')
+    : '';
+  const composition=L && L.composition ? `<p>${escapeHtml(L.composition)}</p>` : '';
+  const feeding=L && L.feedingRecommendation ? `<p>${escapeHtml(L.feedingRecommendation)}</p>` : '';
+  return `<div class="label-stack">
+    ${labelAccHTML('Activity', activity)}
+    ${labelAccHTML('Analytical constituents and levels', analytical)}
+    ${labelAccHTML('Additives', additives)}
+    ${labelAccHTML('Composition', composition)}
+    ${labelAccHTML('Feeding recommendation', feeding)}
+  </div>`;
+}
 function renderTechProducts(){
   renderProofBar('tProofBar');
-  const ow=document.getElementById('tContentOwner');
-  if(ow && document.activeElement!==ow) ow.value=state.contentOwner||'';
   const wrap=document.getElementById('tProdWrap'); if(!wrap) return;
   const sel=selectedProducts();
   const jb=document.getElementById('tJumpBar');
@@ -5135,7 +5200,6 @@ function renderTechProducts(){
           ${elevatorBlockHTML(p)}
         </div>
       </div>
-      ${rationaleHTML(p)}
       <div class="prodspecs">
         <div class="prodspec"><div class="lbl">Form</div><div class="val">${escapeHtml(p.form||'\u2014')}</div></div>
         <div class="prodspec"><div class="lbl">Target species</div><div class="val">${escapeHtml(selectedProductSpeciesText(p))}</div></div>
@@ -5148,17 +5212,11 @@ function renderTechProducts(){
           <ul class="arglist ${p.group==='FEED'?'or':''}">${(p.solutions||[]).map(a=>`<li>${escapeHtml(a)}</li>`).join('')}</ul>
         </div>
         <div>
-          <h4>Application and dosage</h4>
-          <div class="notebox pending">
-            <div class="k">Pending &mdash; internal${state.contentOwner?` &middot; ${escapeHtml(state.contentOwner)}`:''}</div>
-            Dosage per species and production phase, water line or in-feed inclusion, programme duration, and
-            compatibility with the other products in the range. To be documented internally; the written programme
-            goes to the customer with the price offer.
-          </div>
-          ${(p.args||[]).length?`<h4 style="margin-top:14px">Additional benefits</h4>
+          ${(p.args||[]).length?`<h4>Additional benefits</h4>
             <ul class="benlist">${p.args.map(b=>`<li>${escapeHtml(b)}</li>`).join('')}</ul>`:''}
         </div>
       </div>
+      ${productLabelHTML(p)}
       <div style="padding:0 22px 20px">
         <div class="eyebrow" style="margin-bottom:9px">Evidence</div>
         ${productHighlightsHTML(p) || '<div class="notebox">No field trial matching the selected species and challenges is on file for this product yet.</div>'}
@@ -6243,6 +6301,30 @@ function copyCommercialEmail(){
    ======================================================================= */
 const DEMOS=[
 {
+  company:'Solano Veterinary', country:'Philippines', contact:'Patrick Solano',
+  owner:'Bettina Raitz', source:'Referral / existing network',
+  founded:'1997', sales:'Patrick Solano', brands:'MSD (majority owned), Virbac (livestock products)',
+  portfolio:['Feed additives','Veterinary products','Vaccines'],
+  origins:['France'],
+  customers:['Integrators','Commercial farms'],
+  customersOther:'Big integrators, some large medium scale farms',
+  primaryBusiness:['Distributor'],
+  formats:['Liquid','Powder','Water-Soluble Powder'],
+  split:{b:40,l:40,r:0,s:0,a:20},
+  challenges:['Egg Production & Performance','Eggshell & Egg Quality','Growth & Feed Efficiency',
+              'Leg Problems & Lameness','Stress & Recovery'],
+  qual:{importer:true,registr:true,volume:true,network:true,segment:true,decision:true,payment:true,exclusive:false},
+  preselect:[],
+  notes:'',
+  partnerTeam:['bettina','mertcan'],
+  cust:[{name:'Patrick Solano',role:''}],
+  xvet:[{name:'Bettina Raitz',role:'Executive Director'},{name:'Mertcan Yıldız',role:'Technical Sales Executive'}],
+  vet:'Mertcan Yıldız', am:'Bettina Raitz',
+  authority:'Bureau of Animal Industry (BAI)',
+  regNotes:'',
+  moq:'', territory:'Philippines', validity:'60 days from date of offer'
+},
+{
   company:'Delta Feed Trading Co.', country:'Egypt', contact:'Mr. Hassan Farouk, Purchasing Director',
   owner:'Bettina Raitz', source:'Paid campaign — Track A (Feed / powder)',
   founded:'2011', sales:'14', brands:'Phibro, Kemin, Nutriad',
@@ -6326,51 +6408,172 @@ function demoDate(offsetDays){
 }
 function demoSet(id,val){ const el=document.getElementById(id); if(el && val!=null) el.value=val; }
 
-function loadDemo(){
-  const d=DEMOS[Number(document.getElementById('demoPick')?.value||0)]||DEMOS[0];
+const SAVED_PROFILES_KEY='xvetSavedProfiles';
+const ACTIVE_PROFILE_KEY='xvetActiveProfile';
 
-  /* --- meeting 1, step 0 --- */
-  demoSet('pcCompany',d.company);
+function readSavedProfiles(){
+  try{
+    const raw=localStorage.getItem(SAVED_PROFILES_KEY);
+    const list=raw?JSON.parse(raw):[];
+    return Array.isArray(list)?list:[];
+  }catch(e){ return []; }
+}
+function writeSavedProfiles(list){
+  try{ localStorage.setItem(SAVED_PROFILES_KEY, JSON.stringify(list)); }catch(e){}
+}
+function activeProfileKey(){
+  try{ return localStorage.getItem(ACTIVE_PROFILE_KEY)||''; }catch(e){ return ''; }
+}
+function setActiveProfileKey(key){
+  try{
+    if(key) localStorage.setItem(ACTIVE_PROFILE_KEY, key);
+    else localStorage.removeItem(ACTIVE_PROFILE_KEY);
+  }catch(e){}
+}
+function blankCustomerSnapshot(){
+  return {
+    company:'', country:'', contact:'', owner:'', source:'',
+    founded:'', sales:'', brands:'',
+    portfolio:[], origins:[], customers:[], customersOther:'',
+    portfolioOther:'', originsOther:'',
+    primaryBusiness:[], formats:[],
+    split:{b:0,l:0,r:0,s:0,a:0},
+    challenges:[], qual:{}, preselect:[], notes:'',
+    partnerTeam:[], cust:[{name:'',role:''}], xvet:[{name:'',role:''}],
+    vet:'', am:'', authority:'', regNotes:'',
+    moq:'', territory:'', validity:'', workshopDate:demoDate(0)
+  };
+}
+function captureWorkshopSnapshot(){
+  const g=id=>document.getElementById(id)?.value||'';
+  return {
+    company:g('pcCompany')||g('company'),
+    country:g('pcCountry')||g('country'),
+    contact:g('pcContact'),
+    owner:g('pcOwner'),
+    source:g('pcSource'),
+    founded:g('founded'),
+    sales:g('sales'),
+    brands:g('brands'),
+    portfolio:typeof vals==='function'?vals('portfolio'):[],
+    portfolioOther:g('portfolioOther'),
+    origins:typeof vals==='function'?vals('origins'):[],
+    originsOther:g('originsOther'),
+    customers:typeof vals==='function'?vals('customers'):[],
+    customersOther:g('customersOther'),
+    primaryBusiness:[...(state.primaryBusiness||[])],
+    formats:typeof vals==='function'?vals('formats'):[],
+    split:{...(state.split||{b:0,l:0,r:0,s:0,a:0})},
+    challenges:[...(state.challengeRank||[])],
+    qual:{...(state.qual||{})},
+    preselect:[...(state.preselect||[])],
+    notes:g('profileComments'),
+    partnerTeam:[...(state.partnerTeam||[])],
+    cust:(state.imCust||[]).map(x=>({name:x.name||'',role:x.role||''})),
+    xvet:(state.imXvet||[]).map(x=>({name:x.name||'',role:x.role||''})),
+    vet:g('tmVet'), am:g('tmAM'),
+    authority:g('tmAuthority'), regNotes:g('tmRegNotes'),
+    moq:g('ofMoq'), territory:g('ofTerritory'), validity:g('ofValidity'),
+    workshopDate:g('pcDate'),
+    selected:[...(state.selected||[])],
+    pairings:JSON.parse(JSON.stringify(state.pairings||[])),
+    added:[...(state.added||[])]
+  };
+}
+function refreshProfilePicker(){
+  const sel=document.getElementById('demoPick');
+  if(!sel) return;
+  const cur=sel.value;
+  const demoOpts=DEMOS.map((d,i)=>
+    `<option value="demo:${i}">${escapeHtml([d.company,d.country].filter(Boolean).join(' · '))}</option>`).join('');
+  const saved=readSavedProfiles().slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  const savedOpts=saved.length
+    ? `<optgroup label="Saved profiles">${saved.map(p=>
+        `<option value="saved:${p.id}">${escapeHtml(p.name||'New profile')}</option>`).join('')}</optgroup>`
+    : '';
+  sel.innerHTML=`<optgroup label="Test customers">${demoOpts}</optgroup>${savedOpts}`;
+  const want=state.activeSavedId?`saved:${state.activeSavedId}`:(activeProfileKey()||cur||'demo:0');
+  if([...sel.options].some(o=>o.value===want)) sel.value=want;
+}
+let applyingProfile=false;
+function scheduleProfileSave(){
+  if(!state.activeSavedId || applyingProfile) return;
+  clearTimeout(window.__profileSaveT);
+  window.__profileSaveT=setTimeout(persistActiveProfile, 350);
+}
+function persistActiveProfile(){
+  if(!state.activeSavedId || applyingProfile) return;
+  const list=readSavedProfiles();
+  const rec=list.find(p=>p.id===state.activeSavedId);
+  if(!rec) return;
+  rec.data=captureWorkshopSnapshot();
+  rec.name=(rec.data.company||'').trim()||'New profile';
+  rec.updatedAt=Date.now();
+  writeSavedProfiles(list);
+  const sel=document.getElementById('demoPick');
+  const opt=sel && [...sel.options].find(o=>o.value===`saved:${rec.id}`);
+  if(opt) opt.textContent=rec.name;
+  else refreshProfilePicker();
+}
+window.addEventListener('pagehide', persistActiveProfile);
+function applyCustomerSnapshot(d){
+  if(!d) return;
+  applyingProfile=true;
+  try{
+    applyCustomerSnapshotInner(d);
+  }finally{
+    applyingProfile=false;
+    scheduleProfileSave();
+  }
+}
+function applyCustomerSnapshotInner(d){
+  demoSet('pcCompany',d.company||'');
   const cs=document.getElementById('pcCountry');
   if(cs){
-    cs.value=d.country;
-    if(cs.value!==d.country){
+    cs.value=d.country||'';
+    if(d.country && cs.value!==d.country){
       const hit=[...cs.options].find(o=>o.value.toLowerCase().replace(/[^a-z]/g,'')
-                 .includes(d.country.toLowerCase().replace(/[^a-z]/g,'')));
+                 .includes(String(d.country).toLowerCase().replace(/[^a-z]/g,'')));
       if(hit) cs.value=hit.value;
     }
   }
-  demoSet('pcContact',d.contact);
-  demoSet('pcDate',demoDate(0));
+  demoSet('pcContact',d.contact||'');
+  demoSet('pcDate',d.workshopDate||demoDate(0));
   if(typeof setPartnerTeam==='function') setPartnerTeam(d.partnerTeam||[]);
-  demoSet('pcOwner',d.owner);
+  demoSet('pcOwner',d.owner||'');
   const src=document.getElementById('pcSource');
-  if(src && [...src.options].some(o=>o.value===d.source||o.text===d.source)) src.value=d.source;
+  if(src && d.source && [...src.options].some(o=>o.value===d.source||o.text===d.source)) src.value=d.source;
 
-  state.qual={...d.qual};
+  state.qual={...(d.qual||{})};
   document.querySelectorAll('[data-q]').forEach(b=>{
     const v=state.qual[b.dataset.q];
     b.classList.toggle('on', v!==undefined && (b.dataset.v==='1')===v);
   });
 
-  state.preselect=[...d.preselect];
+  state.preselect=[...(d.preselect||[])];
   document.querySelectorAll('[data-pre]').forEach(b=>
     b.classList.toggle('selected', state.preselect.includes(b.dataset.pre)));
 
-  /* --- meeting 1, step 2 --- */
-  demoSet('company',d.company);
-  demoSet('country',d.country);
-  demoSet('founded',d.founded);
-  demoSet('sales',d.sales);
-  demoSet('brands',d.brands);
-  demoSet('profileComments',d.notes);
-  demoSetChips('portfolio',d.portfolio);
-  demoSetChips('origins',d.origins);
-  demoSetChips('customers',d.customers);
-  demoSetChips('formats',d.formats);
+  demoSet('company',d.company||'');
+  demoSet('country',d.country||'');
+  demoSet('founded',d.founded||'');
+  demoSet('sales',d.sales||'');
+  demoSet('brands',d.brands||'');
+  demoSet('profileComments',d.notes||'');
+  demoSetChips('portfolio',d.portfolio||[]);
+  demoSetChips('origins',d.origins||[]);
+  demoSetChips('customers',d.customers||[]);
+  demoSet('customersOther',d.customersOther||'');
+  demoSet('portfolioOther',d.portfolioOther||'');
+  demoSet('originsOther',d.originsOther||'');
+  const pOther=document.getElementById('portfolioOtherWrap');
+  if(pOther) pOther.style.display=d.portfolioOther?'block':'none';
+  const oOther=document.getElementById('originsOtherWrap');
+  if(oOther) oOther.style.display=d.originsOther?'block':'none';
+  demoSetChips('formats',d.formats||[]);
   setPrimaryBusiness(d.primaryBusiness||[]);
 
-  state.split={...d.split};
+  state.split={b:0,l:0,r:0,s:0,a:0,...(d.split||{})};
   Object.keys(state.split).forEach(k=>{
     const r=document.querySelector(`[data-sp="${k}"]`);
     if(r) r.value=state.split[k];
@@ -6379,48 +6582,78 @@ function loadDemo(){
   });
   if(typeof updateSplitTotal==='function') updateSplitTotal();
 
-  /* challenges: keep only those the product data actually knows */
-  const known=new Set(catalogueChallenges());
-  state.challengeRank=d.challenges.filter(c=>known.has(c)).slice(0,5);
+  const known=new Set(typeof catalogueChallenges==='function'?catalogueChallenges():[]);
+  state.challengeRank=(d.challenges||[]).filter(c=>!known.size||known.has(c)).slice(0,5);
   if(typeof renderChallengePicker==='function') renderChallengePicker();
 
-  demoSet('mkCountry',d.country);
+  demoSet('mkCountry',d.country||'');
   if(typeof prepSync==='function') prepSync();
   if(typeof syncProfile==='function') syncProfile();
   if(typeof renderMarket==='function') renderMarket();
 
-  /* --- shortlist --- */
-  if(typeof pairProducts==='function'){
-    pairProducts();
-  }else if(typeof rankProducts==='function'){
-    state.added=[];
-    state.selected=rankProducts().slice(0,MAX_SELECT).map(p=>p.id);
-  }
-
-  /* --- meeting 1, summary + follow-up --- */
-  state.meetDate=demoDate(7); state.meetTime='10:00';
-  demoSet('fuContact',d.contact.split(',')[0]);
-  demoSet('fuSender',d.owner);
-
-  /* --- meeting 2 --- */
-  demoSet('tmDate',state.meetDate); demoSet('tmTime',state.meetTime);
-  state.tmDirectorIds=teamIdByName(d.owner)?[teamIdByName(d.owner)]:(teamIdByName(d.am)?[teamIdByName(d.am)]:[]);
-  state.tmVetIds=teamIdByName(d.vet)?[teamIdByName(d.vet)]:[];
-  state.tmAMIds=teamIdByName(d.am)?[teamIdByName(d.am)]:[];
-  demoSet('tmDirector',d.owner);
-  demoSet('tmVet',d.vet); demoSet('tmAM',d.am);
-  demoSet('tmAuthority',d.authority); demoSet('tmRegNotes',d.regNotes);
-  state.imCust=d.cust.map(x=>({...x}));
-  state.imXvet=(d.xvet||[{name:d.owner,role:'Account manager'}]).map(x=>({...x}));
+  state.imCust=(d.cust&&d.cust.length?d.cust:[{name:'',role:''}]).map(x=>({...x}));
+  state.imXvet=(d.xvet&&d.xvet.length?d.xvet:[{name:'',role:''}]).map(x=>({...x}));
   if(typeof renderIntroAttendees==='function') renderIntroAttendees();
   if(typeof prepSync==='function') prepSync();
-  state.tmCust=d.cust.map(x=>({...x}));
+  state.tmCust=(d.cust||[]).map(x=>({...x}));
+
+  demoSet('tmAuthority',d.authority||'');
+  demoSet('tmRegNotes',d.regNotes||'');
+  demoSet('tmVet',d.vet||'');
+  demoSet('tmAM',d.am||'');
+  if(d.vet||d.am||d.owner){
+    state.tmDirectorIds=teamIdByName(d.owner)?[teamIdByName(d.owner)]:(teamIdByName(d.am)?[teamIdByName(d.am)]:[]);
+    state.tmVetIds=teamIdByName(d.vet)?[teamIdByName(d.vet)]:[];
+    state.tmAMIds=teamIdByName(d.am)?[teamIdByName(d.am)]:[];
+  }
+  if(typeof initTechPrep==='function') initTechPrep();
+
+  if(d.pairings && d.pairings.length){
+    state.pairings=JSON.parse(JSON.stringify(d.pairings));
+    state.selected=[...(d.selected||[])];
+    state.added=[...(d.added||[])];
+  }else if((d.challenges||[]).length && typeof pairProducts==='function'){
+    pairProducts();
+  }else{
+    state.pairings=[]; state.selected=[]; state.added=[];
+  }
+
+  demoSet('ofTerritory',d.territory||'');
+  demoSet('ofValidity',d.validity||'');
+  demoSet('ofMoq',d.moq||'');
+  demoSet('ofContact',(d.contact||'').split(',')[0]);
+}
+function loadDemo(){
+  persistActiveProfile();
+  try{ sessionStorage.removeItem('xvetWorkshopReset'); }catch(e){}
+  const pick=document.getElementById('demoPick')?.value||'demo:0';
+  if(pick.startsWith('saved:')){
+    const id=pick.slice(6);
+    const rec=readSavedProfiles().find(p=>p.id===id);
+    if(!rec){ demoToast('That saved profile is no longer available.'); refreshProfilePicker(); return; }
+    state.activeSavedId=id;
+    setActiveProfileKey(pick);
+    applyCustomerSnapshot(rec.data||blankCustomerSnapshot());
+    const active=screens.findIndex(x=>x.classList.contains('active'));
+    if(active>-1) go(active);
+    demoToast(`Profile loaded: ${rec.name||'New profile'}`);
+    return;
+  }
+  state.activeSavedId='';
+  const idx=Number(String(pick).replace(/^demo:/,''));
+  const d=DEMOS[Number.isFinite(idx)?idx:0]||DEMOS[0];
+  setActiveProfileKey(`demo:${Number.isFinite(idx)?idx:0}`);
+  applyCustomerSnapshot(d);
+
+  state.meetDate=demoDate(7); state.meetTime='10:00';
+  demoSet('fuContact',(d.contact||'').split(',')[0]);
+  demoSet('fuSender',d.owner);
+  demoSet('tmDate',state.meetDate); demoSet('tmTime',state.meetTime);
   ['tPrepSent','tPrepFilled','tPrepChecked'].forEach((id,i)=>{
     const el=document.getElementById(id); if(el) el.checked=(i<2);
   });
   state.tmDocs=null;
   if(typeof initTechPrep==='function') initTechPrep();
-
   state.confirm={};
   (typeof selectedProducts==='function'?selectedProducts():[]).forEach((p,i)=>{
     state.confirm[p.id]={on:true,
@@ -6430,32 +6663,44 @@ function loadDemo(){
   demoSet('tQuestions','Dosage in the rainy season · compatibility with the current acidifier programme · whether the trial data can be shown to their largest integrator customer.');
   demoSet('tAnswers','Dosage table sent with the offer. Combination protocol confirmed. Trial reports released for customer presentations.');
   demoSet('tOpenPoints','Pack size for the powder products, label language, sample quantity for one reference farm.');
-
-  /* --- offer email --- */
-  demoSet('ofTerritory',d.territory);
-  demoSet('ofValidity',d.validity);
-  demoSet('ofContact',d.contact.split(',')[0]);
   demoSet('ofDepDate',demoDate(28));
-  demoSet('ofMoq',d.moq);
   state.offer=null; state.offerRights='exclusive';
   if(typeof initOffer==='function') initOffer();
-
-  /* --- meeting 3 --- */
   demoSet('cReplyBy',demoDate(35));
-  demoSet('ceContact',d.contact.split(',')[0]);
+  demoSet('ceContact',(d.contact||'').split(',')[0]);
   demoSet('ceSender',d.am);
   demoSet('ceProformaBy',demoDate(38));
   state.cTerms=null; state.cPlan=null;
   if(typeof initCommercial==='function') initCommercial();
 
-  /* --- refresh whatever is on screen --- */
   const active=screens.findIndex(x=>x.classList.contains('active'));
   if(active>-1) go(active);
   demoToast(`Test customer loaded: ${d.company}`);
 }
 
+function newSavedProfile(){
+  persistActiveProfile();
+  const rec={
+    id:'p'+Date.now().toString(36),
+    name:'New profile',
+    updatedAt:Date.now(),
+    data:blankCustomerSnapshot()
+  };
+  const list=readSavedProfiles();
+  list.unshift(rec);
+  writeSavedProfiles(list);
+  state.activeSavedId='';
+  setActiveProfileKey('saved:'+rec.id);
+  try{ sessionStorage.removeItem('xvetWorkshopReset'); }catch(e){}
+  location.reload();
+}
+
 function clearDemo(){
   if(!confirm('Reset the whole workshop and start from an empty form?')) return;
+  persistActiveProfile();
+  state.activeSavedId='';
+  setActiveProfileKey('');
+  try{ sessionStorage.setItem('xvetWorkshopReset','1'); }catch(e){}
   location.reload();
 }
 
@@ -6654,10 +6899,25 @@ INTERNAL NOTE (do not send): deposit request and further commercial conditions p
    INIT
    ======================================================================= */
 (async function boot(){
-  await Promise.all([loadFAOSTAT(),loadFieldTrialsCSV(),loadProductScoringCSV()]);
+  await Promise.all([loadFAOSTAT(),loadFieldTrialsCSV(),loadProductScoringCSV(),loadProductLabels()]);
   initSupportCards();
   initPrep();
+  let skipDemo=false;
+  try{ skipDemo=sessionStorage.getItem('xvetWorkshopReset')==='1'; }catch(e){}
+  refreshProfilePicker();
   syncProfile();
+  if(skipDemo) return;
+  const active=activeProfileKey();
+  if(active.startsWith('saved:')){
+    const rec=readSavedProfiles().find(p=>p.id===active.slice(6));
+    if(rec){
+      state.activeSavedId=rec.id;
+      refreshProfilePicker();
+      applyCustomerSnapshot(rec.data||blankCustomerSnapshot());
+      return;
+    }
+  }
+  loadDemo();
 })();
 </script>
 </body>
