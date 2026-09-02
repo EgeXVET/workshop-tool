@@ -275,6 +275,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 .bar .num{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
 .srcnote{margin-top:14px;padding:11px 13px;border-radius:11px;background:var(--soft);border:1px solid #D8E5DB;
   font-size:11.5px;color:#41544A;line-height:1.5}
+.market-notes{margin-top:16px}
+.market-notes label{margin:0 0 6px}
+.market-notes textarea{min-height:96px;resize:vertical}
 
 /* ---------- selection ---------- */
 .selgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -669,6 +672,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
   background:var(--bg);border-bottom:1px solid var(--line);margin-bottom:16px}
 .jumpbar button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600}
 .jumpbar button:hover{border-color:var(--xg-l);color:var(--xg)}
+.jumpbar button.has-note{border-style:dotted;border-color:rgba(98,187,69,.75);color:var(--xg)}
 
 .morewrap{border:1px dashed #C6D6C9;border-radius:18px;background:#FBFDFB;padding:0;margin-top:8px;overflow:hidden}
 .morewrap>summary{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;list-style:none;
@@ -762,7 +766,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--xg-l);box-shadow:0 0 
 }
 
 @media print{
-  .topbar,.navsteps,.navwrap,.footer-actions,.jumpbar,.cta,.select-overlay{display:none!important}
+  .topbar,.navsteps,.navwrap,.footer-actions,.jumpbar,.cta,.select-overlay,.tprod-row .tprod-note{display:none!important}
+  .tprod-row{display:block;margin-bottom:18px}
   .screen{display:block!important;page-break-after:always;padding:0}
   body{background:#fff}
 }
@@ -1063,9 +1068,9 @@ body.presenting .internal-note{display:none}
 .offerprods{margin-top:14px;border:1px solid #D2E3D6;border-radius:12px;background:var(--soft);padding:12px 14px}
 .offerprods .k{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--xg);
   margin-bottom:7px}
-.opline{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid #DCE8DE;font-size:12.5px}
+.opline{display:flex;gap:10px;align-items:flex-start;padding:5px 0;border-bottom:1px solid #DCE8DE;font-size:12.5px;flex-wrap:wrap}
 .opline:last-child{border-bottom:none}
-.opline span{color:var(--muted);font-size:11.5px}
+.opline span{color:var(--muted);font-size:11.5px;flex:1 1 180px;line-height:1.45}
 
 .mailcard{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow)}
 .mailcard .mh{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--xg)}
@@ -1218,7 +1223,7 @@ body.presenting .ownerbar{display:none}
 .notebox.pending .k{color:#B93C10}
 
 /* deep dive: tighter than the customer-facing product screen */
-#tProdWrap .prodblock{margin-bottom:12px}
+#tProdWrap .prodblock{margin-bottom:0}
 #tProdWrap .prodhead{padding:16px 18px;gap:14px;margin-bottom:10px}
 #tProdWrap .prodname{font-size:26px;margin:2px 0 3px}
 #tProdWrap .prodspecs{padding:10px 18px;gap:8px 14px}
@@ -1252,6 +1257,46 @@ body.presenting .ownerbar{display:none}
   color:var(--xg);margin-bottom:6px}
 .label-group ul{margin:0;padding:0 0 0 18px}
 .label-group li{margin:4px 0;line-height:1.45}
+
+.tprod-row{
+  display:grid;grid-template-columns:minmax(0,1fr) 236px;grid-template-areas:"card note";
+  gap:14px;align-items:start;margin-bottom:18px;scroll-margin-top:124px
+}
+.tprod-row .prodblock{grid-area:card;margin-bottom:0}
+.tprod-note{
+  grid-area:note;position:sticky;top:124px;z-index:25;align-self:start;
+  background:linear-gradient(180deg,#F8FCF6 0%,#F3F9EF 100%);
+  border:1.5px dotted rgba(98,187,69,.72);border-radius:3px 14px 12px 12px;
+  padding:13px 12px 11px;box-shadow:1px 2px 0 rgba(0,103,47,.05)
+}
+.tprod-note:has(textarea:not(:placeholder-shown)){
+  border-color:rgba(0,103,47,.58);
+  background:linear-gradient(180deg,#F4FAF0,#EEF6EA)
+}
+.tprod-fold{
+  position:absolute;top:-1px;right:-1px;width:15px;height:15px;pointer-events:none;
+  background:linear-gradient(135deg,transparent 49%,rgba(98,187,69,.22) 50%);
+  border-radius:0 13px 0 0
+}
+.tprod-note-k{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(0,103,47,.68);margin-bottom:2px}
+.tprod-note-p{font-size:12px;font-weight:650;color:var(--xg);line-height:1.3;margin-bottom:8px}
+.tprod-note textarea{
+  width:100%;min-height:156px;max-height:calc(100vh - 220px);border:none;border-radius:0;padding:0;
+  background:transparent;box-shadow:none;resize:vertical;overflow:auto;
+  font-size:13px;line-height:1.5;color:#2A4032
+}
+.tprod-note textarea:focus{outline:none;box-shadow:none;border:none}
+.tprod-note textarea::placeholder{color:#8AA390;font-style:italic}
+.tqa-note{
+  grid-area:auto;position:relative;top:auto;z-index:1;align-self:stretch;
+  max-height:none;overflow:visible
+}
+.tqa-note textarea{min-height:145px;max-height:none}
+@media(max-width:1080px){
+  .tprod-row{grid-template-columns:1fr;grid-template-areas:"note" "card";gap:10px;scroll-margin-top:118px}
+  .tprod-row .tprod-note{top:118px;max-height:28vh;z-index:28;overflow:auto}
+}
 
 .regdocadd{display:flex;gap:8px;margin-top:10px}
 .regdocadd input{flex:1 1 auto;padding:8px 10px;font-size:12.5px}
@@ -1349,10 +1394,10 @@ body.presenting .internal-only{display:none}
               </div>
             </div>
             <div>
-              <label>Primary business</label>
+              <label>Business activity</label>
               <div class="mcheck" data-mcheck="primaryBusiness">
                 <button type="button" class="mcheck-btn" aria-expanded="false" aria-haspopup="listbox">
-                  <span class="mcheck-value placeholder">Select primary business</span>
+                  <span class="mcheck-value placeholder">Select business activity</span>
                   <span class="mcheck-caret">&#9662;</span>
                 </button>
                 <div class="mcheck-menu" role="group">
@@ -1445,7 +1490,7 @@ body.presenting .internal-only{display:none}
           <div class="profile-row" style="border-color:var(--line);color:var(--ink)">
             <span style="color:var(--muted)">Market</span><span id="ppCountry">&mdash;</span></div>
           <div class="profile-row" style="border-color:var(--line);color:var(--ink)">
-            <span style="color:var(--muted)">Primary business</span><span id="ppBusiness">&mdash;</span></div>
+            <span style="color:var(--muted)">Business activity</span><span id="ppBusiness">&mdash;</span></div>
           <div class="profile-row" style="border-color:var(--line);color:var(--ink)">
             <span style="color:var(--muted)">Date</span><span id="ppDate">&mdash;</span></div>
           <div class="profile-row" style="border-color:var(--line);color:var(--ink)">
@@ -1534,13 +1579,13 @@ body.presenting .internal-only{display:none}
   <section class="screen" data-meet="intro" data-title="XVET">
     <div class="panel">
       <div class="eyebrow">Step 1</div>
-      <h2>Who <span class="xvtip-wrap" tabindex="0"><span class="xvtip-word">XVET</span>
+      <h2>Who is <span class="xvtip-wrap" tabindex="0"><span class="xvtip-word">XVET</span>
         <span class="xvtip" role="tooltip">
           <p>XVET is a German, GMP+ certified company with more than 24 years of experience developing and exporting non-pharmaceutical feed and drinking water solutions for livestock production.</p>
           <p>Our goal goes beyond supplying products. We work as a long-term market development partner to our distributors, combining high-quality German-manufactured solutions with technical expertise, regulatory guidance, and localized marketing support.</p>
           <p>Today, XVET products are used internationally across more than 60 countries, helping our partners address local livestock challenges, build sustainable product portfolios, and grow their markets with confidence.</p>
         </span>
-      </span> is</h2>
+      </span></h2>
 
       <div class="xvsplit">
         <div class="xvleft">
@@ -1644,10 +1689,10 @@ body.presenting .internal-only{display:none}
               </div>
             </div>
             <div>
-              <label>Primary business</label>
+              <label>Business activity</label>
               <div class="mcheck" data-mcheck="primaryBusiness">
                 <button type="button" class="mcheck-btn" aria-expanded="false" aria-haspopup="listbox">
-                  <span class="mcheck-value placeholder">Select primary business</span>
+                  <span class="mcheck-value placeholder">Select business activity</span>
                   <span class="mcheck-caret">&#9662;</span>
                 </button>
                 <div class="mcheck-menu" role="group">
@@ -1770,7 +1815,7 @@ body.presenting .internal-only{display:none}
           <div class="profile-row"><span>Country</span><span id="pCountry">&mdash;</span></div>
           <div class="profile-row"><span>Founded</span><span id="pFounded">&mdash;</span></div>
           <div class="profile-row"><span>Contact</span><span id="pSales">&mdash;</span></div>
-          <div class="profile-row"><span>Primary business</span><span id="pBusiness">&mdash;</span></div>
+          <div class="profile-row"><span>Business activity</span><span id="pBusiness">&mdash;</span></div>
           <div class="profile-row"><span>Portfolio</span><span id="pPortfolio">&mdash;</span></div>
           <div class="profile-row"><span>Origins</span><span id="pOrigins">&mdash;</span></div>
           <div class="profile-row"><span>Key brands</span><span id="pBrands">&mdash;</span></div>
@@ -1847,6 +1892,11 @@ body.presenting .internal-only{display:none}
       </div>
 
       <div class="srcnote" id="srcNote"></div>
+
+      <div class="market-notes">
+        <label for="marketNotes">Market notes</label>
+        <textarea id="marketNotes" placeholder="What this market needs, competitive set, registration, seasonality&hellip;" oninput="onMarketNotesInput()"></textarea>
+      </div>
 
       <div class="footer-actions">
         <button class="cta ghost" onclick="go(3)">&larr; Back</button>
@@ -2073,8 +2123,8 @@ body.presenting .internal-only{display:none}
   <!-- ============ TECHNICAL MEETING · 0 · Prep ============ -->
   <section class="screen" data-title="T-Prep" data-meet="tech" data-prep="1">
     <div class="prepbar">
-      <b>Internal &mdash; before the technical meeting.</b> Not for screen sharing. Record who attends on both sides
-      and the registration documents required in this market, then start the meeting.
+      <b>Internal &mdash; before the technical meeting.</b> Not for screen sharing. Record who attends on both sides,
+      then start the meeting.
     </div>
 
     <div class="layout">
@@ -2139,25 +2189,8 @@ body.presenting .internal-only{display:none}
               onclick="addCustAttendee()">+ Add participant</button>
           </div>
         </div>
-
-        <div class="question open">
-          <div class="qhead"><span><span class="n">3</span>Registration documents required in this market</span><span>&#8963;</span></div>
-          <div class="qbody">
-            <p class="small">Select what the authority requires. Anything missing can be added below.</p>
-            <div class="docpicker" id="tmDocs"></div>
-            <div class="grid2" style="margin-top:12px">
-              <div><label>Add another document</label>
-                <input id="tmDocNew" placeholder="e.g. Halal certificate" onkeydown="if(event.key==='Enter')addRegDoc()"></div>
-              <div style="display:flex;align-items:flex-end">
-                <button class="cta ghost" style="padding:11px 16px;font-size:13px" onclick="addRegDoc()">Add</button>
-              </div>
-            </div>
-            <label>Authority / responsible body</label>
-            <input id="tmAuthority" placeholder="e.g. General Organisation for Veterinary Services" oninput="syncTechPrep()">
-            <label>Notes on the registration route</label>
-            <textarea id="tmRegNotes" rows="3" placeholder="Timeline, fees, who submits, known obstacles…" oninput="syncTechPrep()"></textarea>
-          </div>
-        </div>
+        <input type="hidden" id="tmAuthority" value="">
+        <textarea id="tmRegNotes" hidden></textarea>
       </div>
 
       <aside class="sticky">
@@ -2168,10 +2201,8 @@ body.presenting .internal-only{display:none}
             <span style="color:var(--muted)">Date</span><span id="tmPvDate">&mdash;</span></div>
           <div class="profile-row" style="border-color:var(--line);color:var(--ink)">
             <span style="color:var(--muted)">XVET</span><span id="tmPvXvet">&mdash;</span></div>
-          <div class="profile-row" style="border-color:var(--line);color:var(--ink)">
-            <span style="color:var(--muted)">Customer side</span><span id="tmPvCust">&mdash;</span></div>
           <div class="profile-row" style="border-color:var(--line);color:var(--ink);border-bottom:none">
-            <span style="color:var(--muted)">Documents</span><span id="tmPvDocs">&mdash;</span></div>
+            <span style="color:var(--muted)">Customer side</span><span id="tmPvCust">&mdash;</span></div>
         </div>
 
         <div class="panel" style="margin-top:14px">
@@ -2300,16 +2331,18 @@ body.presenting .internal-only{display:none}
     <div class="panel" style="margin-top:18px">
       <div class="eyebrow">Q &amp; A</div>
       <h3 style="margin-top:6px">Questions and feedback</h3>
-      <p class="small" style="max-width:700px">Captured live while going through the products.</p>
+      <p class="small" style="max-width:700px">Use the post-it beside each product for questions as you scroll. This box is for anything that is not specific to one product.</p>
       <div class="grid2" style="margin-top:12px;align-items:start">
-        <div>
-          <label>Questions and feedback from the customer</label>
+        <aside class="tprod-note tqa-note">
+          <span class="tprod-fold"></span>
+          <div class="tprod-note-k">Questions and feedback from the customer</div>
           <textarea id="tQuestions" rows="5" placeholder="Captured live in the meeting…"></textarea>
-        </div>
-        <div>
-          <label>Answered here / to follow up</label>
+        </aside>
+        <aside class="tprod-note tqa-note">
+          <span class="tprod-fold"></span>
+          <div class="tprod-note-k">Answered here / to follow up</div>
           <textarea id="tAnswers" rows="5" placeholder="What was answered, and what XVET sends afterwards…"></textarea>
-        </div>
+        </aside>
       </div>
       <div class="notebox" style="margin-top:14px">
         <div class="k">After this meeting</div>
@@ -2359,62 +2392,58 @@ body.presenting .internal-only{display:none}
   <!-- ============ TECHNICAL MEETING · Follow-up offer email ============ -->
   <section class="screen" data-title="T-Offer" data-meet="tech" data-prep="1">
     <div class="prepbar">
-      <b>Internal &mdash; after the technical meeting.</b> Select what is offered, then copy the email. The price
-      offer itself is issued separately from the ERP; this email carries the terms around it.
+      <b>Internal &mdash; after the technical meeting.</b> This email is the meeting record and the Q&amp;A.
+      The price offer itself is issued separately from the ERP.
     </div>
+    <input type="hidden" id="ofTerritory">
+    <input type="hidden" id="ofValidity">
+    <input type="hidden" id="ofTerm" value="2 years, renewing in 1-year increments">
+    <input type="hidden" id="ofDepPer" value="1000">
+    <input type="hidden" id="ofDepDate">
+    <input type="hidden" id="ofDepTotal">
 
     <div class="offerlayout">
       <div class="panel">
         <div class="eyebrow">Technical meeting &middot; Follow-up</div>
-        <h2>Offer and follow-up email</h2>
-        <p>Every selected point is written into the email on the right. Any wording can be edited in place.</p>
+        <h2>Follow-up email</h2>
+        <p>A record of the discussion: priorities, products, questions and the next step. Edit on the left; the draft updates on the right.</p>
 
         <div class="question open">
-          <div class="qhead"><span><span class="n">1</span>Scope of the offer</span><span>&#8963;</span></div>
+          <div class="qhead"><span><span class="n">1</span>Recipient and next step</span><span>&#8963;</span></div>
           <div class="qbody">
             <div class="grid2">
-              <div><label>Territory</label><input id="ofTerritory" placeholder="e.g. Sri Lanka" oninput="renderOfferEmail()"></div>
-              <div><label>Offer validity</label><input id="ofValidity" placeholder="e.g. 60 days from date of offer" oninput="renderOfferEmail()"></div>
-            </div>
-            <div class="grid2">
-              <div><label>Initial term</label><input id="ofTerm" value="2 years, renewing in 1-year increments" oninput="renderOfferEmail()"></div>
               <div><label>Recipient name</label><input id="ofContact" placeholder="e.g. Mr. Hassan" oninput="renderOfferEmail()"></div>
+              <div><label>Commercial meeting date</label><input type="date" id="ofMeetDate" oninput="setCommMeeting('date',this.value)"></div>
             </div>
+            <div><label>Time</label><input type="time" id="ofMeetTime" oninput="setCommMeeting('time',this.value)"></div>
+          </div>
+        </div>
+
+        <div class="question open">
+          <div class="qhead"><span><span class="n">2</span>Products discussed</span><span>&#8963;</span></div>
+          <div class="qbody">
+            <p class="small">Each product is summarised by the customer challenge it was discussed against &mdash; not as a generic pitch.</p>
             <div class="offerprods" id="ofProducts"></div>
           </div>
         </div>
 
         <div class="question open">
-          <div class="qhead"><span><span class="n">2</span>Deposit and registration start</span><span>&#8963;</span></div>
+          <div class="qhead"><span><span class="n">3</span>Questions and answers</span><span>&#8963;</span></div>
           <div class="qbody">
-            <div class="grid3">
-              <div><label>Deposit per product</label><input id="ofDepPer" value="1000" oninput="renderOfferEmail()"></div>
-              <div><label>Total deposit</label><input id="ofDepTotal" readonly></div>
-              <div><label>Latest payment date</label><input type="date" id="ofDepDate" oninput="renderOfferEmail()"></div>
-            </div>
-            <div class="termlist" data-tgroup="deposit"></div>
+            <p class="small">Questions come from the product post-its and the general Q&amp;A on the deep-dive page.</p>
+            <div class="offerprods" id="ofQAList"></div>
+            <label>Answers from the meeting / still to follow up</label>
+            <textarea id="ofAnswers" rows="5" placeholder="Clear, concise answers. Leave blank if the technical team will send a separate clarification."
+              oninput="setOfferAnswers(this.value)"></textarea>
           </div>
         </div>
 
-        <div class="question">
-          <div class="qhead"><span><span class="n">3</span>Commercial and logistics</span><span>&#8963;</span></div>
-          <div class="qbody"><div class="termlist" data-tgroup="commercial"></div></div>
-        </div>
-
-        <div class="question">
-          <div class="qhead"><span><span class="n">4</span>Support from XVET</span><span>&#8963;</span></div>
-          <div class="qbody"><div class="termlist" data-tgroup="support"></div></div>
-        </div>
-
-        <div class="question">
-          <div class="qhead"><span><span class="n">5</span>Own point</span><span>&#8963;</span></div>
+        <div class="question open">
+          <div class="qhead"><span><span class="n">4</span>Agreed actions</span><span>&#8963;</span></div>
           <div class="qbody">
-            <label>Add a term that is not in the list</label>
-            <div class="grid2" style="align-items:end">
-              <input id="ofOwnText" placeholder="Free text, added to the email" onkeydown="if(event.key==='Enter')addOwnTerm()">
-              <button class="cta ghost" style="padding:11px 16px;font-size:13px" onclick="addOwnTerm()">Add to email</button>
-            </div>
-            <div class="termlist" data-tgroup="own" style="margin-top:12px"></div>
+            <label>As agreed during the meeting</label>
+            <textarea id="ofAgreed" rows="5" placeholder="One action per line, e.g.&#10;XVET will send the written application programme per species and phase&#10;Customer will confirm first order quantities for the products discussed"
+              oninput="state.offerAgreed=this.value;renderOfferEmail();scheduleProfileSave()"></textarea>
           </div>
         </div>
       </div>
@@ -2428,8 +2457,7 @@ body.presenting .internal-only{display:none}
           <div class="msub"><span>Subject</span><b id="ofSubject"></b></div>
           <pre class="mbody" id="ofBody"></pre>
           <div class="mfoot">
-            The price offer with prices, packaging and MOQ is sent separately from the ERP. No distribution
-            agreement is attached at this stage &mdash; these are the terms it will be based on.
+            The price and commercial offer is sent separately from the ERP. This email stays with the technical record.
           </div>
         </div>
       </aside>
@@ -3769,7 +3797,7 @@ function renderPrimaryBusiness(){
     });
     const valueEl=box.querySelector('.mcheck-value');
     if(valueEl){
-      valueEl.textContent=label==='\u2014'?'Select primary business':label;
+      valueEl.textContent=label==='\u2014'?'Select business activity':label;
       valueEl.classList.toggle('placeholder', label==='\u2014');
     }
   });
@@ -4073,7 +4101,7 @@ async function copyCustomerProfile(ev){
     ['Country','pCountry'],
     ['Founded','pFounded'],
     ['Contact','pSales'],
-    ['Primary business','pBusiness'],
+    ['Business activity','pBusiness'],
     ['Portfolio','pPortfolio'],
     ['Key brands','pBrands'],
     ['Origins','pOrigins'],
@@ -4083,9 +4111,11 @@ async function copyCustomerProfile(ev){
     ['Problems','pChallenges']
   ];
   const comments=document.getElementById('profileComments').value.trim()||'\u2014';
+  const market=marketNotesText()||'\u2014';
   const text=[
     ...fields.map(([label,id])=>`${label}: ${document.getElementById(id).textContent.trim()}`),
-    `Workshop notes: ${comments}`
+    `Workshop notes: ${comments}`,
+    `Market notes: ${market}`
   ].join('\n');
   const button=(ev&&ev.currentTarget)||document.getElementById('copyProfileBtn');
   try{
@@ -4111,6 +4141,16 @@ async function copyCustomerProfile(ev){
 /* =======================================================================
    STEP 3 — MARKET
    ======================================================================= */
+function marketNotesText(){
+  return (document.getElementById('marketNotes')?.value||'').trim();
+}
+function marketNotesPlainBlock(){
+  const n=marketNotesText();
+  return n?`MARKET NOTES\n${n}`:'';
+}
+function onMarketNotesInput(){
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
+}
 function fmt(v){ return fmtAnimals(v); }
 
 function onMarketCountryChange(){
@@ -4228,15 +4268,12 @@ async function renderMarket(){
    Products already in-market for this country are UNAVAILABLE and never enter results.
    ======================================================================= */
 const COUNTRY_PRODUCT_STATUS={
-  /* Philippines — already listed locally (Mayya Turbo Tox → Turbo Grow, Mayya Toxin Guard → Toxi-Guard,
-     Max-Mineral → Mineral Forte, Turbovim → Turbo Fluid). */
+  /* Philippines — already listed locally (Max-Mineral → Mineral Forte, Turbovim → Turbo Fluid). */
   philippines:{
     '42-degree':'UNAVAILABLE',
     'novosol':'UNAVAILABLE',
-    'turbo-grow':'UNAVAILABLE',
     'cal-d-phos':'UNAVAILABLE',
     'mineral-forte':'UNAVAILABLE',
-    'toxi-guard-protect-se':'UNAVAILABLE',
     'vitamin-e-se':'UNAVAILABLE',
     'turbo-fluid':'UNAVAILABLE',
     'novovital':'UNAVAILABLE',
@@ -5024,7 +5061,7 @@ function renderSummary(){
   document.getElementById('sumCountry').textContent=ct;
 
   const sel=selectedProducts();
-  document.getElementById('sumGrid').innerHTML=sel.map(p=>`
+  document.getElementById('sumGrid').innerHTML=(sel.map(p=>`
     <div class="sumcard sum-product ${p.group}" style="padding:16px">
       <span class="sum-product-img ${p.group}">${p.img?`<img src="${p.img}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.remove()">`:''}</span>
       <div>
@@ -5032,7 +5069,8 @@ function renderSummary(){
         <p class="small" style="margin:0">${escapeHtml(p.tagline)}</p>
         <p class="small" style="margin:6px 0 0;opacity:.8">${escapeHtml(p.group)} &middot; ${escapeHtml(p.form)}</p>
       </div>
-    </div>`).join('') || '<p>No products selected.</p>';
+    </div>`).join('') || '<p>No products selected.</p>')
+    +(marketNotesText()?`<div class="sumcard" style="grid-column:1/-1;padding:16px"><div class="k">Market notes</div><div class="v" style="white-space:pre-wrap">${escapeHtml(marketNotesText())}</div></div>`:'');
 }
 function renderTechSummary(){
   const host=document.getElementById('tSumGrid'); if(!host) return;
@@ -5043,8 +5081,36 @@ function secondMeetingText(){
   const d=document.getElementById('secondMeetingDate')?.value||state.meetDate||'';
   const t=document.getElementById('secondMeetingTime')?.value||state.meetTime||'';
   if(!d && !t) return 'to be fixed';
-  const day=d?new Date(d).toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}):'date open';
+  const day=d?new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}):'date open';
   return t?`${day}, ${t}`:day;
+}
+function thirdMeetingText(){
+  const d=document.getElementById('thirdMeetingDate')?.value||document.getElementById('ofMeetDate')?.value||state.commDate||'';
+  const t=document.getElementById('thirdMeetingTime')?.value||document.getElementById('ofMeetTime')?.value||state.commTime||'';
+  if(!d && !t) return 'to be fixed';
+  const day=d?new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}):'date open';
+  return t?`${day}, ${t}`:day;
+}
+function setCommMeeting(part, val){
+  if(part==='date') state.commDate=val;
+  if(part==='time') state.commTime=val;
+  const d=document.getElementById('thirdMeetingDate'), t=document.getElementById('thirdMeetingTime');
+  const od=document.getElementById('ofMeetDate'), ot=document.getElementById('ofMeetTime');
+  if(d && part==='date') d.value=val;
+  if(t && part==='time') t.value=val;
+  if(od && part==='date') od.value=val;
+  if(ot && part==='time') ot.value=val;
+  if(typeof renderOfferEmail==='function') renderOfferEmail();
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
+}
+function commMeetingSentence(){
+  const d=state.commDate||document.getElementById('thirdMeetingDate')?.value||document.getElementById('ofMeetDate')?.value||'';
+  const t=(state.commTime||document.getElementById('thirdMeetingTime')?.value||document.getElementById('ofMeetTime')?.value||'').slice(0,5);
+  const day=d?new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
+  if(day && t) return `We look forward to meeting on ${day} at ${t} to discuss commercial points in detail.`;
+  if(day) return `We look forward to meeting on ${day} to discuss commercial points in detail.`;
+  if(t) return `We look forward to meeting at ${t} to discuss commercial points in detail.`;
+  return `We look forward to meeting to discuss commercial points in detail.`;
 }
 
 /* =======================================================================
@@ -5080,6 +5146,7 @@ function customerProfileSnapshot(){
     formats:typeof joined==='function'?joined('formats'):'\u2014',
     challenges:(typeof selectedChallenges==='function'?selectedChallenges():[]).join('  \u00b7  ')||'\u2014',
     comments:(g('profileComments')?.value||'').trim(),
+    marketNotes:typeof marketNotesText==='function'?marketNotesText():'',
     products:(typeof selectedProducts==='function'?selectedProducts():[]).length,
     productNames:(typeof selectedProducts==='function'?selectedProducts():[]).map(p=>p.name).join('  \u00b7  ')||'\u2014'
   };
@@ -5090,6 +5157,9 @@ function recapProfileHTML(){
   const row=(label,value,last)=>`<div class="profile-row"${last?' style="border-bottom:none"':''}><span>${label}</span><span>${escapeHtml(value)}</span></div>`;
   const notes=s.comments
     ? `<div class="profile-notes"><label>Workshop notes</label><p>${escapeHtml(s.comments)}</p></div>`
+    : '';
+  const market=s.marketNotes
+    ? `<div class="profile-notes"><label>Market notes</label><p>${escapeHtml(s.marketNotes)}</p></div>`
     : '';
   return `<aside class="profile sticky">
     <button class="profile-copy-icon" type="button" onclick="copyCustomerProfile(event)"
@@ -5105,7 +5175,7 @@ function recapProfileHTML(){
       ${row('Country',s.country)}
       ${row('Founded',s.founded)}
       ${row('Contact',s.sales)}
-      ${row('Primary business',s.business)}
+      ${row('Business activity',s.business)}
       ${row('Portfolio',s.portfolio)}
       ${row('Origins',s.origins)}
       ${row('Key brands',s.brands)}
@@ -5116,6 +5186,7 @@ function recapProfileHTML(){
       ${row('Products',s.productNames,true)}
     </div>
     ${notes}
+    ${market}
   </aside>`;
 }
 
@@ -5189,10 +5260,13 @@ function renderTechProducts(){
   const sel=selectedProducts();
   const jb=document.getElementById('tJumpBar');
   if(jb) jb.innerHTML=sel.map((p,i)=>
-    `<button onclick="document.getElementById('tb-${p.id}').scrollIntoView({behavior:'smooth'})">${i+1}. ${escapeHtml(p.name)}</button>`).join('');
+    `<button data-pid="${escapeHtml(p.id)}" class="${(state.prodNotes?.[p.id]||'').trim()?'has-note':''}" onclick="document.getElementById('tb-${p.id}').scrollIntoView({behavior:'smooth'})">${i+1}. ${escapeHtml(p.name)}</button>`).join('');
 
-  wrap.innerHTML=sel.map(p=>`
-    <div class="prodblock" id="tb-${p.id}">
+  wrap.innerHTML=sel.map(p=>{
+    const note=(state.prodNotes&&state.prodNotes[p.id])||'';
+    return `
+    <div class="tprod-row" id="tb-${p.id}">
+    <div class="prodblock">
       <div class="prodhead ${p.group}">
         <div class="prodimg">${p.img?`<img src="${p.img}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.remove()">`:''}</div>
         <div>
@@ -5228,7 +5302,47 @@ function renderTechProducts(){
         <div class="eyebrow" style="margin-bottom:9px">Evidence</div>
         ${productHighlightsHTML(p) || '<div class="notebox">No field trial matching the selected species and challenges is on file for this product yet.</div>'}
       </div>
-    </div>`).join('') || '<div class="panel"><p>No products selected yet. Run the introduction meeting first.</p></div>';
+    </div>
+    <aside class="tprod-note">
+      <span class="tprod-fold"></span>
+      <div class="tprod-note-k">Questions &amp; notes</div>
+      <div class="tprod-note-p">${escapeHtml(p.name)}</div>
+      <textarea rows="7" placeholder="Jot questions and comments as you go\u2026"
+        oninput="setProdNote(${JSON.stringify(p.id)},this.value)">${escapeHtml(note)}</textarea>
+    </aside>
+    </div>`;
+  }).join('') || '<div class="panel"><p>No products selected yet. Run the introduction meeting first.</p></div>';
+}
+function setProdNote(id, val){
+  state.prodNotes=state.prodNotes||{};
+  state.prodNotes[id]=val;
+  const btn=document.querySelector(`#tJumpBar button[data-pid="${CSS.escape(id)}"]`);
+  if(btn) btn.classList.toggle('has-note', !!(val||'').trim());
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
+}
+function productNotesEntries(){
+  state.prodNotes=state.prodNotes||{};
+  return (typeof selectedProducts==='function'?selectedProducts():[])
+    .map(p=>{
+      const text=(state.prodNotes[p.id]||'').trim();
+      return text?{id:p.id,name:p.name,text}:null;
+    }).filter(Boolean);
+}
+function productNotesEmailBlock(){
+  const items=productNotesEntries();
+  const general=(document.getElementById('tQuestions')?.value||'').trim();
+  if(!items.length && !general) return '';
+  const parts=items.map(x=>`  ${x.name}\n    ${x.text.replace(/\n/g,'\n    ')}`);
+  if(general) parts.push(`  General\n    ${general.replace(/\n/g,'\n    ')}`);
+  return `QUESTIONS AND COMMENTS FROM THE TECHNICAL MEETING\n${parts.join('\n')}`;
+}
+function productNotesExportBlock(){
+  const items=productNotesEntries();
+  const general=(document.getElementById('tQuestions')?.value||'').trim();
+  if(!items.length && !general) return '\u2014';
+  const parts=items.map(x=>`${x.name}\n  ${x.text.replace(/\n/g,'\n  ')}`);
+  if(general) parts.push(items.length?`General\n  ${general}`:general);
+  return parts.join('\n\n');
 }
 
 /* --- registration table --- */
@@ -5483,7 +5597,7 @@ function renderTechAgendaBits(){
 }
 function productSumCardsHTML(){
   const sel=selectedProducts();
-  return sel.map(p=>`
+  const cards=sel.map(p=>`
     <div class="sumcard sum-product ${p.group}" style="padding:16px">
       <span class="sum-product-img ${p.group}">${p.img?`<img src="${p.img}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.remove()">`:''}</span>
       <div>
@@ -5492,6 +5606,8 @@ function productSumCardsHTML(){
         <p class="small" style="margin:6px 0 0;opacity:.8">${escapeHtml(p.group)} &middot; ${escapeHtml(p.form)}</p>
       </div>
     </div>`).join('') || '<p>No products selected.</p>';
+  const n=typeof marketNotesText==='function'?marketNotesText():'';
+  return cards+(n?`<div class="sumcard" style="grid-column:1/-1;padding:16px"><div class="k">Market notes</div><div class="v" style="white-space:pre-wrap">${escapeHtml(n)}</div></div>`:'');
 }
 function renderCommAgendaBits(){
   const host=document.getElementById('cAttendees');
@@ -5667,7 +5783,22 @@ function initOffer(){
   ensureOfferState();
   renderRightsChips();
   renderTermLists();
-  renderOfferProducts();
+  const terr=document.getElementById('ofTerritory');
+  if(terr && !terr.value){
+    terr.value=(document.getElementById('mkCountry')?.value||document.getElementById('pcCountry')?.value
+      ||document.getElementById('country')?.value||'').trim();
+  }
+  const sd=state.commDate||document.getElementById('thirdMeetingDate')?.value||'';
+  const st=state.commTime||document.getElementById('thirdMeetingTime')?.value||'';
+  const od=document.getElementById('ofMeetDate'), ot=document.getElementById('ofMeetTime');
+  if(od && !od.value && sd) od.value=sd;
+  if(ot && !ot.value && st) ot.value=st;
+  if(sd) state.commDate=sd;
+  if(st) state.commTime=st;
+  const oa=document.getElementById('ofAnswers'), ta=document.getElementById('tAnswers');
+  if(oa && ta) oa.value=ta.value||'';
+  const ag=document.getElementById('ofAgreed');
+  if(ag) ag.value=state.offerAgreed||ag.value||'';
   renderOfferEmail();
 }
 
@@ -5707,16 +5838,101 @@ function deleteOwnTerm(id){
 
 function renderOfferProducts(){
   const host=document.getElementById('ofProducts'); if(!host) return;
-  const prods=offerProducts();
+  const prods=typeof selectedProducts==='function'?selectedProducts():[];
   host.innerHTML=prods.length
-    ? `<div class="k">Products in this offer (${prods.length})</div>`+
-      prods.map(p=>{const c=state.confirm?.[p.id]||{};
+    ? `<div class="k">Discussed (${prods.length})</div>`+
+      prods.map(p=>{
+        const ch=productChallengeLabels(p);
         return `<div class="opline"><b>${escapeHtml(p.name)}</b>
-          <span>${escapeHtml(p.form||'')}${c.qty?' &middot; first order '+escapeHtml(c.qty):''}${c.pack?' &middot; '+escapeHtml(c.pack):''}</span></div>`;}).join('')
-    : '<div class="small">No products confirmed yet &mdash; complete final selection in the commercial meeting.</div>';
-  const v=offerVars();
+          <span>${ch.length?('particularly relevant for '+ch.join(', ')):escapeHtml(p.form||'')}</span></div>`;
+      }).join('')
+    : '<div class="small">No products discussed yet &mdash; complete the deep dive first.</div>';
   const tot=document.getElementById('ofDepTotal');
-  if(tot) tot.value=v.DEP_TOTAL==='\u2014'?'':('EUR '+v.DEP_TOTAL);
+  if(tot){
+    const v=offerVars();
+    tot.value=v.DEP_TOTAL==='\u2014'?'':('EUR '+v.DEP_TOTAL);
+  }
+}
+function renderOfferQAList(){
+  const host=document.getElementById('ofQAList'); if(!host) return;
+  const items=typeof productNotesEntries==='function'?productNotesEntries():[];
+  const general=(document.getElementById('tQuestions')?.value||'').trim();
+  if(!items.length && !general){
+    host.innerHTML='<p class="small" style="margin:0">No questions captured yet. Jot them on the product post-its in the deep dive.</p>';
+    return;
+  }
+  host.innerHTML=`<div class="k">Raised in the meeting</div>`+
+    items.map(x=>`<div class="opline"><b>${escapeHtml(x.name)}</b><span>${escapeHtml(x.text)}</span></div>`).join('')+
+    (general?`<div class="opline"><b>General</b><span>${escapeHtml(general)}</span></div>`:'');
+}
+function setOfferAnswers(val){
+  const t=document.getElementById('tAnswers');
+  if(t) t.value=val;
+  if(typeof renderOfferEmail==='function') renderOfferEmail();
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
+}
+function listInProse(items){
+  const a=(items||[]).map(x=>String(x||'').trim()).filter(Boolean);
+  if(!a.length) return '';
+  if(a.length===1) return a[0];
+  if(a.length===2) return a[0]+' and '+a[1];
+  return a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+}
+function productChallengeLabels(p){
+  if(!p) return [];
+  const fromPairs=(state.pairings||[])
+    .filter(x=>x && x.id===p.id && x.kind==='challenge' && x.label)
+    .map(x=>x.label);
+  const ranked=typeof selectedChallenges==='function'?selectedChallenges():[];
+  const hits=(p.hits||[]).filter(h=>ranked.includes(h));
+  return [...new Set([...fromPairs, ...hits])];
+}
+function speciesLabelsForEmail(){
+  return (typeof SPECIES!=='undefined'?SPECIES:[])
+    .filter(s=>(Number(state.split?.[s.k])||0)>0)
+    .sort((a,b)=>(Number(state.split[b.k])||0)-(Number(state.split[a.k])||0))
+    .map(s=>s.label);
+}
+function offerCompanyName(){
+  return (document.getElementById('company')?.value||document.getElementById('pcCompany')?.value||'').trim();
+}
+function offerMeetingAnswers(){
+  return (document.getElementById('ofAnswers')?.value||document.getElementById('tAnswers')?.value||'').trim();
+}
+function offerAgreedActions(){
+  return (document.getElementById('ofAgreed')?.value||state.offerAgreed||'').trim();
+}
+function offerProductDiscussedLine(p){
+  const ch=productChallengeLabels(p);
+  if(ch.length) return `${p.name} – particularly relevant for ${listInProse(ch)}`;
+  const sp=typeof selectedProductSpeciesText==='function'?selectedProductSpeciesText(p):'';
+  if(sp && sp!=='\u2014') return `${p.name} – discussed for ${sp}`;
+  return p.name;
+}
+function offerQASection(){
+  const items=typeof productNotesEntries==='function'?productNotesEntries():[];
+  const general=(document.getElementById('tQuestions')?.value||'').trim();
+  const answers=offerMeetingAnswers();
+  if(!items.length && !general && !answers) return '';
+  const topics=items.map(x=>x.name);
+  let topicLine='';
+  if(items.length || general){
+    if(topics.length && general)
+      topicLine=`During the discussion, you also raised several technical points regarding ${listInProse(topics)} and a further general point.`;
+    else if(topics.length)
+      topicLine=`During the discussion, you also raised several technical points regarding ${listInProse(topics)}.`;
+    else
+      topicLine='During the discussion, you also raised several technical points.';
+  }
+  const qLines=items.map(x=>`${x.name}: ${x.text.replace(/\n/g,' ')}`);
+  if(general) qLines.push(`General: ${general.replace(/\n/g,' ')}`);
+  const parts=[];
+  if(topicLine) parts.push(topicLine);
+  if(qLines.length) parts.push(qLines.join('\n'));
+  if(answers) parts.push(answers);
+  else if(qLines.length)
+    parts.push('For the points still open, our technical team is reviewing the information and we will provide you with a separate clarification.');
+  return parts.join('\n\n');
 }
 
 function offerRightsLine(){
@@ -5734,24 +5950,42 @@ function offerTermGroup(g,title){
 }
 function offerEmailText(){
   const contact=(document.getElementById('ofContact')?.value||'').trim();
-  const prods=offerProducts();
-  const grp=offerTermGroup;
+  const company=offerCompanyName()||'your company';
+  const challenges=typeof selectedChallenges==='function'?selectedChallenges():[];
+  const species=listInProse(speciesLabelsForEmail());
+  const prods=typeof selectedProducts==='function'?selectedProducts():[];
+  const qa=offerQASection();
+  const agreed=offerAgreedActions();
+
+  let priorities='the priorities you outlined for your operation';
+  if(challenges.length && species) priorities=`${listInProse(challenges)} in ${species}`;
+  else if(challenges.length) priorities=listInProse(challenges);
+  else if(species) priorities=`the priorities you outlined for ${species}`;
+
+  const productBlock=prods.length
+    ? prods.map(p=>offerProductDiscussedLine(p)).join('\n')
+    : 'to be confirmed';
+
+  const agreedBlock=agreed
+    ? `As agreed during the meeting:\n${agreed.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>`  - ${l.replace(/^[-•]\s*/,'')}`).join('\n')}\n\n`
+    : '';
 
   const body=
 `Dear ${contact||'Sir or Madam'},
 
-thank you for the technical meeting and for the detailed questions on our products.
+Thank you very much for your time and for the productive technical discussion regarding the potential cooperation between ${company} and XVET Germany.
 
-PRODUCTS
-${prods.length?prods.map((p,i)=>{const c=state.confirm?.[p.id]||{};
-  return `  ${i+1}. ${p.name} (${p.form})${c.qty?` — intended first order: ${c.qty}`:''}${c.pack?`, ${c.pack}`:''}`;}).join('\n')
-  :'  — to be confirmed —'}
+Based on our discussion, we understand that your main priorities are ${priorities}.
 
-${grp('deposit','REGISTRATION START AND DEPOSIT')}
-${grp('commercial','COMMERCIAL AND LOGISTICS')}
-${grp('support','SUPPORT FROM XVET')}
-${grp('own','FURTHER POINTS')}
-The written application programme and the answers to open questions follow with this email. Rights, first order and distribution terms are taken up in the commercial meeting.
+In response to these priorities, we discussed the following XVET products:
+
+${productBlock}
+${qa?`\n${qa}\n`:''}
+${agreedBlock}Additionally, a commercial offer will be sent via another e-mail.
+
+${commMeetingSentence()}
+
+In the meantime, if you have any further questions about our solutions and their applications, we would be happy to support you.
 
 Kind regards,
 
@@ -5761,14 +5995,16 @@ XVET GmbH`;
 }
 
 function offerEmailSubject(){
-  const co=(document.getElementById('company')?.value||document.getElementById('pcCompany')?.value||'').trim();
-  const v=offerVars();
-  const n=offerProducts().length;
-  return `XVET — distribution proposal for ${v.TERRITORY}${n?` (${n} products)`:''}${co?` — ${co}`:''}`;
+  const co=offerCompanyName();
+  return `XVET — follow-up on our technical meeting${co?` — ${co}`:''}`;
 }
 
 function renderOfferEmail(){
   renderOfferProducts();
+  if(typeof renderOfferQAList==='function') renderOfferQAList();
+  const od=document.getElementById('ofMeetDate'), ot=document.getElementById('ofMeetTime');
+  if(od && state.commDate && od.value!==state.commDate) od.value=state.commDate;
+  if(ot && state.commTime && ot.value!==state.commTime) ot.value=state.commTime;
   const s=document.getElementById('ofSubject'), b=document.getElementById('ofBody');
   if(s) s.textContent=offerEmailSubject();
   if(b) b.textContent=offerEmailText();
@@ -5939,7 +6175,7 @@ ${msgs.slice(0,2).join('\n\n')}
 
 PRODUCTS PRESENTED
 ${sel.length?sel.map((p,i)=>`  ${i+1}. ${p.name} (${p.group}, ${p.form})`).join('\n'):'  \u2014'}
-
+${marketNotesPlainBlock()?`\n${marketNotesPlainBlock()}\n`:''}
 ATTACHED
 ${att.length?att.map(a=>'  - '+a).join('\n'):'  \u2014'}
 
@@ -6104,7 +6340,7 @@ const PROCESS_STEPS=[
   text:'We expect the reply in writing within two weeks, and before the following meeting.'},
  {n:4, title:'Commercial agreement meeting',
   text:'Registration and the final product list are closed with the management team, then the commercial terms and the decision on the cooperation &mdash; yes or no. Without the written reply beforehand, this meeting does not take place.',
-  team:'Management team'},
+  meeting:'comm', team:'Management team'},
  {n:5, title:'Registration process starts',
   text:'The proforma invoice for the first shipment is sent after the commercial meeting, once the first order quantities are confirmed. The deposit is settled within two weeks of the proforma invoice, and the registration process starts on receipt.'},
  {n:6, title:'First shipment &mdash; start of the official cooperation',
@@ -6114,7 +6350,8 @@ const PROCESS_STEPS=[
 
 function renderProcessSteps(hostId, current){
   const host=document.getElementById(hostId); if(!host) return;
-  const editable = hostId==='sumSteps';
+  const editTech = hostId==='sumSteps';
+  const editComm = hostId==='tSumSteps';
   host.innerHTML=PROCESS_STEPS.map(st=>{
     const done = st.n<current, here = st.n===current, next = st.n===current+1;
     const cls = done?'done':(here?'here':(next?'hi':''));
@@ -6123,7 +6360,7 @@ function renderProcessSteps(hostId, current){
     let extra='';
     if(st.meeting==='tech'){
       const when=(typeof secondMeetingText==='function')?secondMeetingText():'';
-      extra = editable
+      extra = editTech
         ? `<div class="meetfix">
              <span class="meetfix-label">Let us fix the date now</span>
              <input type="date" id="secondMeetingDate" onchange="state.meetDate=this.value;renderSummary()">
@@ -6134,6 +6371,18 @@ function renderProcessSteps(hostId, current){
              conditions are prepared with this offer.</div>`
         : `<div class="meetfix plain">
              ${when&&when!=='to be fixed'?`<span class="meetfix-label">Held on</span><span class="whenpill">${escapeHtml(when)}</span>`:''}
+             <span class="meetfix-team">${st.team}</span></div>`;
+    }else if(st.meeting==='comm'){
+      const when=(typeof thirdMeetingText==='function')?thirdMeetingText():'';
+      extra = editComm
+        ? `<div class="meetfix">
+             <span class="meetfix-label">Let us fix the date now</span>
+             <input type="date" id="thirdMeetingDate" onchange="setCommMeeting('date',this.value)">
+             <input type="time" id="thirdMeetingTime" onchange="setCommMeeting('time',this.value)">
+             <span class="meetfix-team">${st.team}</span>
+           </div>`
+        : `<div class="meetfix plain">
+             ${when&&when!=='to be fixed'?`<span class="meetfix-label">${editTech?'Scheduled':'Held on'}</span><span class="whenpill">${escapeHtml(when)}</span>`:''}
              <span class="meetfix-team">${st.team}</span></div>`;
     }else if(st.team){
       extra=`<div class="meetfix plain"><span class="meetfix-team">${st.team}</span></div>`;
@@ -6150,10 +6399,15 @@ function renderProcessSteps(hostId, current){
     </div>`;
   }).join('');
 
-  if(editable){
+  if(editTech){
     const di=document.getElementById('secondMeetingDate'), ti=document.getElementById('secondMeetingTime');
     if(di && state.meetDate) di.value=state.meetDate;
     if(ti && state.meetTime) ti.value=state.meetTime;
+  }
+  if(editComm){
+    const di=document.getElementById('thirdMeetingDate'), ti=document.getElementById('thirdMeetingTime');
+    if(di && state.commDate) di.value=state.commDate;
+    if(ti && state.commTime) ti.value=state.commTime;
   }
 }
 
@@ -6268,7 +6522,7 @@ beginning; the groundwork from these meetings stays valid.`;
 `Dear ${contact||'Sir or Madam'},
 
 ${core}
-${closing?'\n'+closing+'\n':''}
+${marketNotesPlainBlock()?'\n'+marketNotesPlainBlock()+'\n':''}${closing?'\n'+closing+'\n':''}
 Kind regards,
 
 ${sender||'XVET GmbH'}
@@ -6445,10 +6699,12 @@ function blankCustomerSnapshot(){
     portfolioOther:'', originsOther:'',
     primaryBusiness:[], formats:[],
     split:{b:0,l:0,r:0,s:0,a:0},
-    challenges:[], qual:{}, preselect:[], notes:'',
+    challenges:[], qual:{}, preselect:[], notes:'', marketNotes:'',
     partnerTeam:[], cust:[{name:'',role:''}], xvet:[{name:'',role:''}],
     vet:'', am:'', authority:'', regNotes:'',
-    moq:'', territory:'', validity:'', workshopDate:demoDate(0)
+    moq:'', territory:'', validity:'', workshopDate:demoDate(0),
+    commDate:'', commTime:'',
+    prodNotes:{}, offerAgreed:''
   };
 }
 function captureWorkshopSnapshot(){
@@ -6475,6 +6731,7 @@ function captureWorkshopSnapshot(){
     qual:{...(state.qual||{})},
     preselect:[...(state.preselect||[])],
     notes:g('profileComments'),
+    marketNotes:g('marketNotes'),
     partnerTeam:[...(state.partnerTeam||[])],
     cust:(state.imCust||[]).map(x=>({name:x.name||'',role:x.role||''})),
     xvet:(state.imXvet||[]).map(x=>({name:x.name||'',role:x.role||''})),
@@ -6484,7 +6741,11 @@ function captureWorkshopSnapshot(){
     workshopDate:g('pcDate'),
     selected:[...(state.selected||[])],
     pairings:JSON.parse(JSON.stringify(state.pairings||[])),
-    added:[...(state.added||[])]
+    added:[...(state.added||[])],
+    commDate:state.commDate||g('thirdMeetingDate')||g('ofMeetDate'),
+    commTime:state.commTime||g('thirdMeetingTime')||g('ofMeetTime'),
+    prodNotes:{...(state.prodNotes||{})},
+    offerAgreed:state.offerAgreed||g('ofAgreed')
   };
 }
 function refreshProfilePicker(){
@@ -6567,6 +6828,7 @@ function applyCustomerSnapshotInner(d){
   demoSet('sales',d.sales||'');
   demoSet('brands',d.brands||'');
   demoSet('profileComments',d.notes||'');
+  demoSet('marketNotes',d.marketNotes||'');
   demoSetChips('portfolio',d.portfolio||[]);
   demoSetChips('origins',d.origins||[]);
   demoSetChips('customers',d.customers||[]);
@@ -6629,6 +6891,13 @@ function applyCustomerSnapshotInner(d){
   demoSet('ofValidity',d.validity||'');
   demoSet('ofMoq',d.moq||'');
   demoSet('ofContact',(d.contact||'').split(',')[0]);
+  state.commDate=d.commDate||'';
+  state.commTime=d.commTime||'';
+  demoSet('ofMeetDate',d.commDate||'');
+  demoSet('ofMeetTime',d.commTime||'');
+  state.prodNotes={...(d.prodNotes||{})};
+  state.offerAgreed=d.offerAgreed||'';
+  demoSet('ofAgreed',d.offerAgreed||'');
 }
 function loadDemo(){
   persistActiveProfile();
@@ -6653,6 +6922,7 @@ function loadDemo(){
   applyCustomerSnapshot(d);
 
   state.meetDate=demoDate(7); state.meetTime='10:00';
+  state.commDate=demoDate(21); state.commTime='10:00';
   demoSet('fuContact',(d.contact||'').split(',')[0]);
   demoSet('fuSender',d.owner);
   demoSet('tmDate',state.meetDate); demoSet('tmTime',state.meetTime);
@@ -6667,8 +6937,14 @@ function loadDemo(){
       qty:/Powder|soluble/i.test(p.form||'')?`${(i+2)*250} kg`:`${(i+2)*100} L`,
       pack:/Powder|soluble/i.test(p.form||'')?'25 kg bag':'5 l canister'};
   });
-  demoSet('tQuestions','Dosage in the rainy season · compatibility with the current acidifier programme · whether the trial data can be shown to their largest integrator customer.');
-  demoSet('tAnswers','Dosage table sent with the offer. Combination protocol confirmed. Trial reports released for customer presentations.');
+  const demoProds=typeof selectedProducts==='function'?selectedProducts():[];
+  state.prodNotes={};
+  if(demoProds[0]) state.prodNotes[demoProds[0].id]='Dosage in the rainy season — how should the programme be adjusted?';
+  if(demoProds[1]) state.prodNotes[demoProds[1].id]='Compatibility with the current acidifier programme.';
+  demoSet('tQuestions','Whether the trial data can be shown to their largest integrator customer.');
+  demoSet('tAnswers','Combination protocol confirmed in the meeting. Trial reports can be shared for customer presentations.');
+  state.offerAgreed='XVET will send the written application programme per species and production phase.\nCustomer to confirm intended first order quantities for the products discussed.';
+  demoSet('ofAgreed', state.offerAgreed);
   demoSet('tOpenPoints','Pack size for the powder products, label language, sample quantity for one reference farm.');
   demoSet('ofDepDate',demoDate(28));
   state.offer=null; state.offerRights='exclusive';
@@ -6774,14 +7050,15 @@ XVET      : ${[xvetAttendees().vet,xvetAttendees().am,xvetAttendees().other].fil
 Customer  : ${custAttendees().map(a=>[a.name,a.role].filter(Boolean).join(' \u2013 ')).join(', ')||'\u2014'}
 
 QUESTIONS AND FEEDBACK
-${(document.getElementById('tQuestions')?.value||'').trim()||'\u2014'}
+${productNotesExportBlock()}
 
 ANSWERED / TO FOLLOW UP
 ${(document.getElementById('tAnswers')?.value||'').trim()||'\u2014'}
-
+${marketNotesPlainBlock()?'\n'+marketNotesPlainBlock()+'\n':''}
 NEXT STEP
 Registration, the final product list and the price offer follow in the commercial meeting.
-The written application programme is sent with answers to anything still open.`;
+The written application programme is sent with answers to anything still open.
+Commercial meeting : ${thirdMeetingText()}`;
   copyText(txt,'Technical summary copied to clipboard.');
 }
 
@@ -6833,7 +7110,7 @@ Date  : ${(document.getElementById('cDate')?.value||'').trim()||'\u2014'}
 
 NOTES
 ${(document.getElementById('cNotes')?.value||'').trim()||'\u2014'}
-
+${marketNotesPlainBlock()?'\n'+marketNotesPlainBlock()+'\n':''}
 IF YES \u2014 THE SEQUENCE
 1. Distributor confirms the first order quantities after this meeting.
 2. XVET sends the proforma invoice for the first shipment; both sides sign.
@@ -6856,6 +7133,7 @@ function exportSummary(){
   const dt=document.getElementById('pcDate').value||'';
   const sel=selectedProducts();
   const notes=document.getElementById('profileComments').value.trim()||'—';
+  const market=marketNotesText()||'—';
   const txt=
 `XVET STRATEGY WORKSHOP — SUMMARY
 Customer : ${co}
@@ -6867,7 +7145,7 @@ Customer  : ${attendeeText(state.imCust)||document.getElementById('pcContact').v
 CUSTOMER PROFILE
 Founded    : ${document.getElementById('founded').value||'—'}
 Contact    : ${document.getElementById('sales').value||'—'}
-Primary business : ${primaryBusinessText()}
+Business activity : ${primaryBusinessText()}
 Portfolio  : ${portfolioText()}
 Origins    : ${originsText()}
 Key brands : ${(document.getElementById('brands')?.value||'').trim()||'—'}
@@ -6878,6 +7156,9 @@ Challenges :\n${selectedChallenges().map(c=>`  \u2022 ${c}`).join('\n')||'  —'
 
 WORKSHOP NOTES
 ${notes}
+
+MARKET NOTES
+${market}
 
 SELECTED PRODUCTS (${sel.length})
 ${sel.map((p,i)=>`${i+1}. ${p.name} — ${p.tagline} (${p.group}, ${p.form})${p.added?' [added on customer request]':''}
