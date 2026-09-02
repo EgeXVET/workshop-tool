@@ -20,6 +20,8 @@ NAME_TO_ID = {
     "calm me": "smooth-pro-calm-me",
     "e-hydrolyte + c": "e-hydrolyte-c",
     "e-hydrolyte c": "e-hydrolyte-c",
+    "e-hydrolyte + c pro": "e-hydrolyte-c",
+    "nostress": "e-hydrolyte-c",
     "globiotic": "globiotic",
     "growaqua": "growaqua",
     "hepatisafe": "hepatisafe",

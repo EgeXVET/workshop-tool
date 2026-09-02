@@ -330,8 +330,8 @@
     },
     {
       "id": "e-hydrolyte-c",
-      "name": "E-Hydrolyte + C",
-      "activity": "E-Hydrolyte + C contains predominantly electrolytes and easily digestible carbohydrates, including dextrose as a nutritional energy source. This supports animals, especially during early life stages and periods of stress, by stabilizing the water and electrolyte balance and aiding physiological digestion. Vitamin C supports animals with its well-known effects on oxidative stress and immunity enhancement",
+      "name": "Nostress",
+      "activity": "Nostress contains predominantly electrolytes and easily digestible carbohydrates, including dextrose as a nutritional energy source. This supports animals, especially during early life stages and periods of stress, by stabilizing the water and electrolyte balance and aiding physiological digestion. Vitamin C supports animals with its well-known effects on oxidative stress and immunity enhancement",
       "analyticalConstituents": [
         {
           "name": "Crude ash",

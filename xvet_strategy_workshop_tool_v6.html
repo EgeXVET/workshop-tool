@@ -1360,6 +1360,7 @@ body.presenting .internal-only{display:none}
                   <label class="mcheck-opt"><input type="checkbox" value="Integrator"> Integrator</label>
                   <label class="mcheck-opt"><input type="checkbox" value="Distributor"> Distributor</label>
                   <label class="mcheck-opt"><input type="checkbox" value="Farm"> Farm</label>
+                  <label class="mcheck-opt"><input type="checkbox" value="Producer"> Producer</label>
                   <label class="mcheck-opt"><input type="checkbox" value="Veterinary Service/Practice"> Veterinary Service/Practice</label>
                   <label class="mcheck-opt"><input type="checkbox" value="Veterinary"> Veterinary</label>
                 </div>
@@ -1654,6 +1655,7 @@ body.presenting .internal-only{display:none}
                   <label class="mcheck-opt"><input type="checkbox" value="Integrator"> Integrator</label>
                   <label class="mcheck-opt"><input type="checkbox" value="Distributor"> Distributor</label>
                   <label class="mcheck-opt"><input type="checkbox" value="Farm"> Farm</label>
+                  <label class="mcheck-opt"><input type="checkbox" value="Producer"> Producer</label>
                   <label class="mcheck-opt"><input type="checkbox" value="Veterinary Service/Practice"> Veterinary Service/Practice</label>
                   <label class="mcheck-opt"><input type="checkbox" value="Veterinary"> Veterinary</label>
                 </div>
@@ -3155,7 +3157,7 @@ const SPECIES=[
 const MAX_SELECT=5;
 
 const state={ split:{b:0,l:0,r:0,s:0,a:0}, preselect:[], selected:[], pairings:[], added:[], qual:{}, primaryBusiness:[], partnerTeam:[], tmDirectorIds:[], tmVetIds:[], tmAMIds:[], activeSavedId:'' };
-const PRIMARY_BUSINESS_OPTIONS=['Feed Mill','Integrator','Distributor','Farm','Veterinary Service/Practice','Veterinary'];
+const PRIMARY_BUSINESS_OPTIONS=['Feed Mill','Integrator','Distributor','Farm','Producer','Veterinary Service/Practice','Veterinary'];
 const XVET_TEAM=[
   {id:'salih',name:'Salih Gündüz',role:'Founder & President',img:'assets/team/salih.webp'},
   {id:'bettina',name:'Bettina Raitz',role:'Executive Director',img:'assets/team/bettina.webp'},
@@ -3167,7 +3169,11 @@ const XVET_TEAM=[
   {id:'kubra',name:'Kübranur Patır',role:'Regulatory Affairs & Business Development Executive',img:'assets/team/kubra.webp'},
   {id:'chau',name:'Chau Tran-Le',role:'Export & Logistics Executive',img:'assets/team/chau.webp'},
   {id:'safak',name:'Yusuf Şafak Bayram',role:'IT Manager',img:'assets/team/safak.webp'},
-  {id:'cagri',name:'Cagri Gürpinar',role:'Team Assistant',img:'assets/team/cagri.webp'}
+  {id:'cagri',name:'Cagri Gürpinar',role:'Team Assistant',img:'assets/team/cagri.webp'},
+  {id:'alper',name:'Alper Togan',role:'Technical Sales Executive',img:'assets/team/alper.webp'},
+  {id:'begum',name:'Begüm Trifonoglo',role:'Commercial Marketing & Sales Executive',img:'assets/team/begum.webp'},
+  {id:'dilay',name:'Dilay Kervan Kilinc',role:'Sales & Commercial Operations Specialist',img:'assets/team/dilay.webp'},
+  {id:'rodrigo',name:'Rodrigo Klein da Costa',role:'Logistics and Export Specialist',img:'assets/team/rodrigo.webp'}
 ];
 
 const screens=[...document.querySelectorAll('.screen')];
@@ -4226,6 +4232,7 @@ const COUNTRY_PRODUCT_STATUS={
      Max-Mineral → Mineral Forte, Turbovim → Turbo Fluid). */
   philippines:{
     '42-degree':'UNAVAILABLE',
+    'novosol':'UNAVAILABLE',
     'turbo-grow':'UNAVAILABLE',
     'cal-d-phos':'UNAVAILABLE',
     'mineral-forte':'UNAVAILABLE',
