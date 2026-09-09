@@ -1072,9 +1072,31 @@ body.presenting .internal-note{display:none}
 .opline:last-child{border-bottom:none}
 .opline span{color:var(--muted);font-size:11.5px;flex:1 1 180px;line-height:1.45}
 
+.iconbtn{width:49px;height:49px;padding:0;display:inline-grid;place-items:center;font-size:20px}
+.iconbtn svg{width:22px;height:22px;display:block}
+
+.offertabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+.offertabs button{
+  border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;
+  padding:8px 14px;font-size:12.5px;font-weight:600
+}
+.offertabs button:hover{border-color:var(--xg-l);color:var(--xg)}
+.offertabs button.on{background:var(--xg);color:#fff;border-color:var(--xg)}
+.mailcard .drip-preview{display:none;width:100%;min-height:62vh;max-height:62vh;border:0;background:#E9EEEA}
+.mailcard.drip-on .mbody{display:none}
+.mailcard.drip-on .drip-preview{display:block}
+#offerDripPane .drip-check{
+  display:flex;align-items:center;gap:10px;margin-top:14px;
+  padding:10px 12px;border:1px solid var(--line);border-radius:12px;
+  font-size:13px;cursor:pointer;background:#FBFCFB
+}
+#offerDripPane .drip-check input{width:auto;margin:0}
 .mailcard{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow)}
 .mailcard .mh{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--xg)}
 .mailcard .mh .eyebrow{margin-right:auto}
+.mailcard .mh-actions{display:flex;gap:8px;flex:0 0 auto;align-items:center}
+.mailcard .mh .cta{padding:8px 14px;font-size:12.5px;white-space:nowrap}
+.mailcard .mh .cta.ghost{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28);color:#fff}
 .mailcard .msub{padding:12px 16px;border-bottom:1px solid var(--line);font-size:12.5px;display:flex;gap:10px}
 .mailcard .msub span{color:var(--muted);flex:0 0 auto;font-weight:600;text-transform:uppercase;
   letter-spacing:.07em;font-size:10.5px;padding-top:2px}
@@ -2380,8 +2402,8 @@ body.presenting .internal-only{display:none}
       <div class="footer-actions">
         <button class="cta ghost" onclick="goTitle('T-Products')">&larr; Back</button>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="cta ghost" onclick="goTitle('T-Offer')" title="Open follow-up email"
-            aria-label="Open follow-up email" style="width:49px;height:49px;padding:0;font-size:20px;display:inline-grid;place-items:center">✉</button>
+          <button class="cta ghost iconbtn" onclick="goTitle('T-Offer')" title="Emails"
+            aria-label="Open emails">✉</button>
           <button class="cta ghost" onclick="window.print()">Print / save as PDF</button>
           <button class="cta dark" onclick="exportTechnical()">Copy technical summary</button>
         </div>
@@ -2391,7 +2413,7 @@ body.presenting .internal-only{display:none}
 
   <!-- ============ TECHNICAL MEETING · Follow-up offer email ============ -->
   <section class="screen" data-title="T-Offer" data-meet="tech" data-prep="1">
-    <div class="prepbar">
+    <div class="prepbar" id="offerPrepbar">
       <b>Internal &mdash; after the technical meeting.</b> This email is the meeting record and the Q&amp;A.
       The price offer itself is issued separately from the ERP.
     </div>
@@ -2404,59 +2426,74 @@ body.presenting .internal-only{display:none}
 
     <div class="offerlayout">
       <div class="panel">
-        <div class="eyebrow">Technical meeting &middot; Follow-up</div>
-        <h2>Follow-up email</h2>
-        <p>A record of the discussion: priorities, products, questions and the next step. Edit on the left; the draft updates on the right.</p>
+        <div class="offertabs" id="offerTabs">
+          <button type="button" class="on" data-tab="followup" onclick="setOfferTab('followup')">Follow-up email</button>
+          <button type="button" data-tab="drip1" onclick="setOfferTab('drip1')">Drip 1</button>
+          <button type="button" data-tab="drip2" onclick="setOfferTab('drip2')">Drip 2</button>
+          <button type="button" data-tab="drip3" onclick="setOfferTab('drip3')">Drip 3</button>
+        </div>
 
-        <div class="question open">
-          <div class="qhead"><span><span class="n">1</span>Recipient and next step</span><span>&#8963;</span></div>
-          <div class="qbody">
-            <div class="grid2">
-              <div><label>Recipient name</label><input id="ofContact" placeholder="e.g. Mr. Hassan" oninput="renderOfferEmail()"></div>
-              <div><label>Commercial meeting date</label><input type="date" id="ofMeetDate" oninput="setCommMeeting('date',this.value)"></div>
+        <div id="offerFollowPane">
+          <div class="eyebrow">Technical meeting &middot; Follow-up</div>
+          <h2>Follow-up email</h2>
+          <p>A record of the discussion: priorities, products, questions and the next step. Edit on the left; the draft updates on the right.</p>
+
+          <div class="question open">
+            <div class="qhead"><span><span class="n">1</span>Recipient and next step</span><span>&#8963;</span></div>
+            <div class="qbody">
+              <div class="grid2">
+                <div><label>Recipient name</label><input id="ofContact" placeholder="e.g. Mr. Hassan" oninput="renderOfferEmail()"></div>
+                <div><label>Commercial meeting date</label><input type="date" id="ofMeetDate" oninput="setCommMeeting('date',this.value)"></div>
+              </div>
+              <div><label>Time</label><input type="time" id="ofMeetTime" oninput="setCommMeeting('time',this.value)"></div>
             </div>
-            <div><label>Time</label><input type="time" id="ofMeetTime" oninput="setCommMeeting('time',this.value)"></div>
+          </div>
+
+          <div class="question open">
+            <div class="qhead"><span><span class="n">2</span>Products discussed</span><span>&#8963;</span></div>
+            <div class="qbody">
+              <p class="small">Each product is summarised by the customer challenge it was discussed against &mdash; not as a generic pitch.</p>
+              <div class="offerprods" id="ofProducts"></div>
+            </div>
+          </div>
+
+          <div class="question open">
+            <div class="qhead"><span><span class="n">3</span>Questions and answers</span><span>&#8963;</span></div>
+            <div class="qbody">
+              <p class="small">Questions come from the product post-its and the general Q&amp;A on the deep-dive page.</p>
+              <div class="offerprods" id="ofQAList"></div>
+              <label>Answers from the meeting / still to follow up</label>
+              <textarea id="ofAnswers" rows="5" placeholder="Clear, concise answers. Leave blank if the technical team will send a separate clarification."
+                oninput="setOfferAnswers(this.value)"></textarea>
+            </div>
+          </div>
+
+          <div class="question open">
+            <div class="qhead"><span><span class="n">4</span>Agreed actions</span><span>&#8963;</span></div>
+            <div class="qbody">
+              <label>As agreed during the meeting</label>
+              <textarea id="ofAgreed" rows="5" placeholder="One action per line, e.g.&#10;XVET will send the written application programme per species and phase&#10;Customer will confirm first order quantities for the products discussed"
+                oninput="state.offerAgreed=this.value;renderOfferEmail();scheduleProfileSave()"></textarea>
+            </div>
           </div>
         </div>
 
-        <div class="question open">
-          <div class="qhead"><span><span class="n">2</span>Products discussed</span><span>&#8963;</span></div>
-          <div class="qbody">
-            <p class="small">Each product is summarised by the customer challenge it was discussed against &mdash; not as a generic pitch.</p>
-            <div class="offerprods" id="ofProducts"></div>
-          </div>
-        </div>
-
-        <div class="question open">
-          <div class="qhead"><span><span class="n">3</span>Questions and answers</span><span>&#8963;</span></div>
-          <div class="qbody">
-            <p class="small">Questions come from the product post-its and the general Q&amp;A on the deep-dive page.</p>
-            <div class="offerprods" id="ofQAList"></div>
-            <label>Answers from the meeting / still to follow up</label>
-            <textarea id="ofAnswers" rows="5" placeholder="Clear, concise answers. Leave blank if the technical team will send a separate clarification."
-              oninput="setOfferAnswers(this.value)"></textarea>
-          </div>
-        </div>
-
-        <div class="question open">
-          <div class="qhead"><span><span class="n">4</span>Agreed actions</span><span>&#8963;</span></div>
-          <div class="qbody">
-            <label>As agreed during the meeting</label>
-            <textarea id="ofAgreed" rows="5" placeholder="One action per line, e.g.&#10;XVET will send the written application programme per species and phase&#10;Customer will confirm first order quantities for the products discussed"
-              oninput="state.offerAgreed=this.value;renderOfferEmail();scheduleProfileSave()"></textarea>
-          </div>
-        </div>
+        <div id="offerDripPane" style="display:none"></div>
       </div>
 
       <aside class="sticky">
-        <div class="mailcard">
+        <div class="mailcard" id="offerMailCard">
           <div class="mh">
-            <span class="eyebrow" style="color:#B7E89A">Email draft</span>
-            <button class="cta" style="padding:8px 14px;font-size:12.5px" onclick="copyOfferEmail()">Copy email</button>
+            <span class="eyebrow" style="color:#B7E89A" id="ofDraftLabel">Email draft</span>
+            <span class="mh-actions">
+              <button class="cta" id="ofCopyBtn" onclick="copyCurrentOffer()">Copy email</button>
+              <button class="cta ghost" id="ofCopyCodeBtn" onclick="copyCurrentOfferCode()" style="display:none">Copy code</button>
+            </span>
           </div>
           <div class="msub"><span>Subject</span><b id="ofSubject"></b></div>
           <pre class="mbody" id="ofBody"></pre>
-          <div class="mfoot">
+          <iframe class="drip-preview" id="ofDripFrame" title="Drip email preview"></iframe>
+          <div class="mfoot" id="ofMailFoot">
             The price and commercial offer is sent separately from the ERP. This email stays with the technical record.
           </div>
         </div>
@@ -3636,7 +3673,9 @@ function initPrep(){
     const id=b.dataset.pre, i=state.preselect.indexOf(id);
     if(i>-1) state.preselect.splice(i,1);
     else{ if(state.preselect.length>=MAX_SELECT) return; state.preselect.push(id); }
-    b.classList.toggle('selected'); prepSync();
+    b.classList.toggle('selected');
+    if(typeof pairProducts==='function') pairProducts({keepAdded:true});
+    prepSync();
   });
 
   document.getElementById('qualGrid').innerHTML=QUALS.map(q=>`
@@ -4261,6 +4300,7 @@ async function renderMarket(){
      the top-ranked pick for that challenge too (at most two slots)
      a preselect that already won a slot stays there; otherwise it sits under
      the matching challenge (primary first) or above the five if it matches none
+     named products stay on the shortlist even when the country gate would hide them
      pairing scores each slot for that challenge only (primary then secondary)
      BCG applies only when classified (unclassified 0); other selected challenges do not
    FAOSTAT market size and customer-channel types are not used.
@@ -4415,7 +4455,9 @@ function pickForChallenge(challenge, slotCount){
   return bySlot.find(p=>underCap(p)&&isPrimaryChallenge(p,challenge))
     || bySlot.find(p=>underCap(p));
 }
-function pairProducts(){
+function pairProducts(opts){
+  const keepAdded=opts&&opts.keepAdded;
+  const keptAdded=keepAdded?[...(state.added||[])]:[];
   const selected=vals('challenges');
   const slotCount=new Map();
   const slotIds={};
@@ -4435,7 +4477,6 @@ function pairProducts(){
   (state.preselect||[]).forEach(id=>{
     const p=PRODUCTS.find(x=>x.id===id);
     if(!p) return;
-    if(isCountryUnavailable(id)) return;
     if(winners.has(id)) return;
     const hits=selected.filter(ch=>(p.ch||[]).includes(ch));
     if(!hits.length){
@@ -4455,7 +4496,7 @@ function pairProducts(){
       return rows;
     }));
   state.selected=[...new Set(state.pairings.map(x=>x.id).filter(Boolean))];
-  state.added=[];
+  state.added=keepAdded?keptAdded.filter(id=>!state.selected.includes(id)):[];
   if(typeof scheduleProfileSave==='function') scheduleProfileSave();
 }
 function runSelection(){
@@ -4599,7 +4640,9 @@ function shortlistReason(p, pair){
 
   const kind=pair?pair.kind:'fill';
   if(kind==='preselect')
-    return 'Named by the customer before the workshop, so it is included regardless of the ranking.';
+    return isCountryUnavailable(p.id)
+      ? 'Named by the customer before the workshop. Already listed in this market, so it is shown for the discussion rather than as a new offer.'
+      : 'Named by the customer before the workshop, so it is included regardless of the ranking.';
 
   const hits=(p.hits||[]);
   const parts=[];
@@ -4801,6 +4844,11 @@ function updateSelCounter(){
   });
 }
 function ensureShortlist(){
+  const missing=(state.preselect||[]).some(id=>!(state.pairings||[]).some(p=>p&&p.id===id));
+  if(missing && ((state.preselect||[]).length || selectedChallenges().length)){
+    pairProducts({keepAdded:true});
+    return;
+  }
   if((state.pairings&&state.pairings.length) || (state.selected||[]).some(Boolean)) return;
   if(selectedChallenges().length || (state.preselect||[]).length) pairProducts();
 }
@@ -5799,7 +5847,8 @@ function initOffer(){
   if(oa && ta) oa.value=ta.value||'';
   const ag=document.getElementById('ofAgreed');
   if(ag) ag.value=state.offerAgreed||ag.value||'';
-  renderOfferEmail();
+  if(typeof ensureDripState==='function') ensureDripState();
+  setOfferTab(state.offerTab||'followup');
 }
 
 function renderTermLists(){
@@ -6005,12 +6054,26 @@ function renderOfferEmail(){
   const od=document.getElementById('ofMeetDate'), ot=document.getElementById('ofMeetTime');
   if(od && state.commDate && od.value!==state.commDate) od.value=state.commDate;
   if(ot && state.commTime && ot.value!==state.commTime) ot.value=state.commTime;
+  if(isOfferDripTab()){
+    if(typeof renderDripPreview==='function') renderDripPreview();
+    return;
+  }
   const s=document.getElementById('ofSubject'), b=document.getElementById('ofBody');
   if(s) s.textContent=offerEmailSubject();
   if(b) b.textContent=offerEmailText();
 }
 function copyOfferEmail(){
   copyText(`Subject: ${offerEmailSubject()}\n\n${offerEmailText()}`,'Email copied to clipboard.');
+}
+function copyCurrentOffer(){
+  if(isOfferDripTab()){
+    if(typeof copyDripEmail==='function') copyDripEmail();
+    return;
+  }
+  copyOfferEmail();
+}
+function copyCurrentOfferCode(){
+  if(isOfferDripTab() && typeof copyDripCode==='function') copyDripCode();
 }
 
 
@@ -6654,6 +6717,41 @@ const DEMOS=[
   authority:'NAFDAC',
   regNotes:'NAFDAC registration is slow and document-heavy. Clarify who funds the official fees before committing to a timeline.',
   moq:'12000', territory:'Nigeria', validity:'60 days from date of offer'
+},
+{
+  company:'Essential Vet Laboratories, Inc.', country:'Philippines', contact:'Leonil Atillo',
+  owner:'Ege Gündüz', source:'Referral / existing network',
+  founded:'2002', sales:'Leonil Atillo', brands:'',
+  portfolio:['Feed additives'],
+  portfolioOther:'Own manufacture: antibiotics, liquids, WSP, premixes, multi vitamins, disinfectants',
+  origins:['China'],
+  customers:['Integrators','Commercial farms','Feed mills'],
+  customersOther:'Poultry farms mostly 300,000–500,000 birds; integrators about 1 million breeders',
+  primaryBusiness:['Distributor'],
+  formats:['Liquid','Powder','Water-Soluble Powder'],
+  split:{b:35,l:35,r:20,s:10,a:0},
+  challenges:['Feed Preservation & Mould','Gut Health & Digestion','Immunity Support',
+              'Liver & Metabolic Health','Stress & Recovery'],
+  qual:{importer:true,registr:true,volume:true,network:true,segment:true,decision:true,payment:true,exclusive:false},
+  preselect:[],
+  notes:'Local manufacturer with a laboratory, importing raw materials from China (antibiotics, liquid, WSP, premixes, multi vitamins). Also manufactures disinfectants. Started as an importer of feed additives. Needs an imported line because some farm owners look for imported products. Plan: a separate segment for imported products with promotion of imports. Budget under study; 10–20m pesos (EUR 140–280k) a month investment volume. African Swine Fever — swine industry is in a swamp and slowly recovering. Broilers, layers and breeders.',
+  marketNotes:'African Swine Fever: swine industry slowly recovering. Imported-product segment planned for farm owners who specifically look for imported lines.',
+  partnerTeam:['ege','dilay'],
+  cust:[{name:'Leonil Atillo',role:''}],
+  xvet:[{name:'Ege Gündüz',role:'Partner Success Team'},{name:'Dilay Kervan',role:'Partner Success Team'}],
+  vet:'', am:'Ege Gündüz',
+  authority:'Bureau of Animal Industry (BAI)',
+  regNotes:'',
+  moq:'', territory:'Philippines', validity:'60 days from date of offer',
+  workshopDate:'2026-09-01',
+  selected:['mould-guard-diamond','novosol','globiotic','hepatisafe','renal-cleaner'],
+  pairings:[
+    {id:'mould-guard-diamond',kind:'challenge',label:'Feed Preservation & Mould'},
+    {id:'novosol',kind:'challenge',label:'Gut Health & Digestion'},
+    {id:'globiotic',kind:'challenge',label:'Immunity Support'},
+    {id:'hepatisafe',kind:'challenge',label:'Liver & Metabolic Health'},
+    {id:'renal-cleaner',kind:'challenge',label:'Stress & Recovery'}
+  ]
 }
 ];
 
@@ -6704,7 +6802,8 @@ function blankCustomerSnapshot(){
     vet:'', am:'', authority:'', regNotes:'',
     moq:'', territory:'', validity:'', workshopDate:demoDate(0),
     commDate:'', commTime:'',
-    prodNotes:{}, offerAgreed:''
+    prodNotes:{}, offerAgreed:'',
+    drip:null
   };
 }
 function captureWorkshopSnapshot(){
@@ -6745,7 +6844,8 @@ function captureWorkshopSnapshot(){
     commDate:state.commDate||g('thirdMeetingDate')||g('ofMeetDate'),
     commTime:state.commTime||g('thirdMeetingTime')||g('ofMeetTime'),
     prodNotes:{...(state.prodNotes||{})},
-    offerAgreed:state.offerAgreed||g('ofAgreed')
+    offerAgreed:state.offerAgreed||g('ofAgreed'),
+    drip:typeof captureDripSnapshot==='function'?captureDripSnapshot():(state.drip||null)
   };
 }
 function refreshProfilePicker(){
@@ -6898,6 +6998,7 @@ function applyCustomerSnapshotInner(d){
   state.prodNotes={...(d.prodNotes||{})};
   state.offerAgreed=d.offerAgreed||'';
   demoSet('ofAgreed',d.offerAgreed||'');
+  if(typeof applyDripSnapshot==='function') applyDripSnapshot(d.drip);
 }
 function loadDemo(){
   persistActiveProfile();
@@ -7126,6 +7227,489 @@ function copyText(txt,msg){
   if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(()=>alert(msg),fallback);
   else fallback();
 }
+
+function dripLogoFileUrl(){
+  try{ return new URL('assets/xvet-logo.png', document.baseURI).href; }catch(e){ return 'assets/xvet-logo.png'; }
+}
+let dripLogoDataUri='';
+function loadDripLogo(){
+  if(dripLogoDataUri) return Promise.resolve(dripLogoDataUri);
+  return fetch(dripLogoFileUrl()).then(r=>{
+    if(!r.ok) throw new Error('logo');
+    return r.blob();
+  }).then(blob=>new Promise((resolve,reject)=>{
+    const fr=new FileReader();
+    fr.onload=()=>{ dripLogoDataUri=String(fr.result||''); resolve(dripLogoDataUri); };
+    fr.onerror=reject;
+    fr.readAsDataURL(blob);
+  }));
+}
+function isPublicHttpImageUrl(url){
+  const u=String(url||'').trim();
+  if(!/^https:\/\//i.test(u)) return false;
+  if(/^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(u)) return false;
+  if(/^data:/i.test(u) || /^blob:/i.test(u) || /^file:/i.test(u)) return false;
+  return true;
+}
+function dripLogoMarkHtml(){
+  return `<span style="display:inline-block;font-family:Arial,Helvetica,sans-serif;font-size:36px;line-height:1;font-weight:700;letter-spacing:-.04em;"><span style="color:#005F27;">x</span><span style="color:#62BB45;">vet</span></span>`;
+}
+function dripLogoHeaderHtml(logo, hosted){
+  const src=hosted
+    ? (isPublicHttpImageUrl(logo)?String(logo).trim():'')
+    : String(logo||dripLogoDataUri||dripLogoFileUrl()||'').trim();
+  const inner=(hosted && !src)
+    ? dripLogoMarkHtml()
+    : `<img src="${src}" alt="XVET GmbH" width="132" height="46" style="display:block;width:132px;height:auto;border:0;outline:none;">`;
+  return `<a href="https://xvetgermany.com/" target="_blank" rel="noopener" style="text-decoration:none;">${inner}</a>`;
+}
+
+const DRIP_IDS=['drip1','drip2','drip3'];
+const DRIP_EMPTY={
+  subject:'',
+  tagline:'Care today for a better tomorrow',
+  intro:'',
+  quote:'',
+  quoteName:'',
+  quoteRole:'',
+  closer:'',
+  signoff:'XVET GmbH',
+  motto:'Care today for a better tomorrow',
+  video:'',
+  ratings:false,
+  ctaUrl:'https://xvetgermany.com/testimonial',
+  ctaLabel:'',
+  stats:false
+};
+const DRIP_DEFAULTS={
+  drip1:{
+    subject:'24 years. One partnership at a time.',
+    tagline:'Care today for a better tomorrow',
+    intro:'For 24 years, XVET has grown together with animal health partners around the world.\n\nToday, XVET products are present in more than 60 countries. But for us, the more important number is how many partnerships continue year after year.\n\nBecause a successful distribution partnership isn\u2019t built on the first order.\n\nIt\u2019s built on what happens after it.',
+    quote:'XVET products are selling very well through our retail network, and our sales grow month after month. We are genuinely keen to expand the assortment, as demand for XVET solutions is developing steadily despite the difficult situation in Ukraine.',
+    quoteName:'Andriy Polyakov',
+    quoteRole:'XVET Partner \u00b7 Ukraine',
+    closer:'Across changing economic conditions, challenging markets and even times of war, XVET products continue to deliver value to our partners and end-users around the world.\n\nThat resilience has shaped how we work: reliable products, long-term thinking, and partnerships built to last.',
+    signoff:'XVET GmbH',
+    motto:'Care today for a better tomorrow',
+    video:'https://www.youtube.com/watch?v=Pacz-TfXkE8',
+    ratings:true,
+    ctaUrl:'https://xvetgermany.com/testimonial',
+    ctaLabel:'Read partner testimonials',
+    stats:true
+  },
+  drip2:Object.assign({}, DRIP_EMPTY),
+  drip3:Object.assign({}, DRIP_EMPTY)
+};
+
+function cloneDripEntry(id){
+  return Object.assign({}, DRIP_EMPTY, DRIP_DEFAULTS[id]||{});
+}
+function mergeDripSnapshot(saved){
+  const out={};
+  DRIP_IDS.forEach(id=>out[id]=Object.assign(cloneDripEntry(id), (saved&&saved[id])||{}));
+  return out;
+}
+function ensureDripState(){
+  state.drip=mergeDripSnapshot(state.drip);
+  return state.drip;
+}
+function captureDripSnapshot(){
+  ensureDripState();
+  return JSON.parse(JSON.stringify(state.drip));
+}
+function applyDripSnapshot(saved){
+  state.drip=mergeDripSnapshot(saved);
+}
+function dripData(id){
+  ensureDripState();
+  const key=DRIP_IDS.includes(id)?id:'drip1';
+  return state.drip[key];
+}
+function currentDripId(){
+  return DRIP_IDS.includes(state.offerTab)?state.offerTab:'drip1';
+}
+function isOfferDripTab(){
+  return DRIP_IDS.includes(state.offerTab);
+}
+function openOfferFollowup(){
+  state.offerTab='followup';
+  goTitle('T-Offer');
+}
+function openOfferDrip(tab){
+  state.offerTab=DRIP_IDS.includes(tab)?tab:'drip1';
+  goTitle('T-Offer');
+}
+function setOfferTab(tab){
+  state.offerTab=DRIP_IDS.includes(tab)||tab==='followup'?tab:'followup';
+  const drip=isOfferDripTab();
+  document.querySelectorAll('#offerTabs [data-tab]').forEach(b=>{
+    b.classList.toggle('on', b.dataset.tab===state.offerTab);
+  });
+  const fp=document.getElementById('offerFollowPane');
+  const dp=document.getElementById('offerDripPane');
+  if(fp) fp.style.display=drip?'none':'';
+  if(dp) dp.style.display=drip?'':'none';
+  const card=document.getElementById('offerMailCard');
+  if(card) card.classList.toggle('drip-on', drip);
+  const btn=document.getElementById('ofCopyBtn');
+  if(btn) btn.textContent='Copy email';
+  const codeBtn=document.getElementById('ofCopyCodeBtn');
+  if(codeBtn) codeBtn.style.display=drip?'':'none';
+  const label=document.getElementById('ofDraftLabel');
+  if(label) label.textContent=drip?'HTML draft':'Email draft';
+  const foot=document.getElementById('ofMailFoot');
+  if(foot){
+    foot.textContent=drip
+      ? 'Copy email pastes the designed message into Gmail, with the logo embedded. Copy code is Mailchimp-safe: public image links only, no encoded files.'
+      : 'The price and commercial offer is sent separately from the ERP. This email stays with the technical record.';
+  }
+  const prep=document.getElementById('offerPrepbar');
+  if(prep){
+    prep.innerHTML=drip
+      ? '<b>Internal &mdash; drip after the technical meeting.</b> Edit the copy on the left. The subject is also the bold title in the HTML email.'
+      : '<b>Internal &mdash; after the technical meeting.</b> This email is the meeting record and the Q&amp;A. The price offer itself is issued separately from the ERP.';
+  }
+  if(drip) renderDripFields();
+  if(drip) loadDripLogo().catch(()=>{});
+  renderOfferEmail();
+}
+function setDripField(key, val){
+  const d=dripData(currentDripId());
+  d[key]=val;
+  renderDripPreview();
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
+}
+function renderDripFields(){
+  const host=document.getElementById('offerDripPane'); if(!host) return;
+  const id=currentDripId();
+  const n=id.replace('drip','');
+  const d=dripData(id);
+  host.innerHTML=`
+    <div class="eyebrow">Technical meeting &middot; Drip ${escapeHtml(n)}</div>
+    <h2>Drip ${escapeHtml(n)}</h2>
+    <p>Core copy is editable on the left. The subject line is also the bold title at the top of the HTML email.</p>
+    <div><label>Subject</label>
+      <input value="${escapeHtml(d.subject)}" placeholder="Subject and bold title in the email"
+        oninput="setDripField('subject',this.value)"></div>
+    <div><label>Tagline bar</label>
+      <input value="${escapeHtml(d.tagline)}" placeholder="Care today for a better tomorrow"
+        oninput="setDripField('tagline',this.value)"></div>
+    <div><label>Opening</label>
+      <textarea rows="8" placeholder="One paragraph per block. Separate with a blank line."
+        oninput="setDripField('intro',this.value)">${escapeHtml(d.intro)}</textarea></div>
+    <div><label>Quote</label>
+      <textarea rows="5" placeholder="Partner quote (optional)"
+        oninput="setDripField('quote',this.value)">${escapeHtml(d.quote)}</textarea></div>
+    <div class="grid2">
+      <div><label>Quote name</label>
+        <input value="${escapeHtml(d.quoteName)}" placeholder="e.g. Andriy Polyakov"
+          oninput="setDripField('quoteName',this.value)"></div>
+      <div><label>Quote role</label>
+        <input value="${escapeHtml(d.quoteRole)}" placeholder="e.g. XVET Partner · Ukraine"
+          oninput="setDripField('quoteRole',this.value)"></div>
+    </div>
+    <div><label>After the quote</label>
+      <textarea rows="5" placeholder="Closing paragraphs"
+        oninput="setDripField('closer',this.value)">${escapeHtml(d.closer)}</textarea></div>
+    <div><label>YouTube video</label>
+      <input value="${escapeHtml(d.video)}" placeholder="https://www.youtube.com/watch?v=\u2026"
+        oninput="setDripField('video',this.value)"></div>
+    <div><label>Button label</label>
+      <input value="${escapeHtml(d.ctaLabel)}" placeholder="Read partner testimonials"
+        oninput="setDripField('ctaLabel',this.value)"></div>
+    <div><label>Button link</label>
+      <input value="${escapeHtml(d.ctaUrl)}" placeholder="https://xvetgermany.com/testimonial"
+        oninput="setDripField('ctaUrl',this.value)"></div>
+    <label class="drip-check">
+      <input type="checkbox" ${d.ratings?'checked':''} onchange="setDripField('ratings',this.checked)">
+      Show partner ratings (4.79 / 4.58 / 4.54)
+    </label>
+    <label class="drip-check">
+      <input type="checkbox" ${d.stats?'checked':''} onchange="setDripField('stats',this.checked)">
+      Show 24 / 60+ / partnership stats row
+    </label>
+  `;
+}
+function dripParas(text){
+  return String(text||'').split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
+}
+function dripParaHtml(text){
+  const paras=dripParas(text);
+  return paras.map((p,i)=>{
+    const last=i===paras.length-1;
+    return `<p style="margin:${last?'0':'0 0 16px'};font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.7;color:#33463B;">${escapeHtml(p).replace(/\n/g,'<br>')}</p>`;
+  }).join('');
+}
+function dripYoutubeId(url){
+  const m=String(url||'').trim().match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/)|youtube-nocookie\.com\/embed\/)([A-Za-z0-9_-]{6,})/);
+  return m?m[1]:'';
+}
+function dripVideoHtml(url, preview){
+  const vid=dripYoutubeId(url);
+  if(!vid) return '';
+  const watch='https://www.youtube.com/watch?v='+vid;
+  const inner=preview
+    ? `<iframe src="https://www.youtube.com/embed/${vid}?rel=0" title="XVET partner video" width="520" height="292" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="display:block;width:100%;max-width:520px;height:292px;border:0;border-radius:12px;background:#000;"></iframe>`
+    : `<a href="${watch}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+        <img src="https://i.ytimg.com/vi/${vid}/hqdefault.jpg" alt="Watch the XVET partner video" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:12px;">
+      </a>
+      <p style="margin:10px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;">
+        <a href="${watch}" target="_blank" rel="noopener" style="color:#00672F;font-weight:700;text-decoration:none;">Watch the video &#9654;</a>
+      </p>`;
+  return `
+          <tr>
+            <td align="center" style="padding:0 40px 28px;">
+              ${inner}
+            </td>
+          </tr>`;
+}
+function dripRatingsHtml(d){
+  const ctaLabel=(d.ctaLabel||'').trim() || (d.ratings ? 'Read partner testimonials' : '');
+  const ctaUrl=(d.ctaUrl||'https://xvetgermany.com/testimonial').trim()||'https://xvetgermany.com/testimonial';
+  if(!d.ratings && !ctaLabel) return '';
+  const score=(n,label)=>`
+                  <td width="33%" align="center" valign="top" style="padding:10px 8px;font-family:Arial,Helvetica,sans-serif;">
+                    <p style="margin:0;line-height:1;font-size:30px;font-weight:700;color:#ffffff;letter-spacing:-.03em;">${n}<span style="font-size:15px;font-weight:600;color:#B7E89A;"> / 5</span></p>
+                    <p style="margin:8px 0 0;font-size:13px;line-height:1.3;color:#ffffff;">${label}</p>
+                  </td>`;
+  const ratingsRow=d.ratings?`
+              <tr>
+                <td style="padding:20px 24px 6px;font-family:Arial,Helvetica,sans-serif;">
+                  <p style="margin:0;font-size:13px;line-height:1.4;color:#B7E89A;">Rated by XVET partners in more than 60 countries</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:4px 10px 8px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>
+                      ${score('4.79','Product quality')}
+                      ${score('4.58','Technical support')}
+                      ${score('4.54','Logistics')}
+                    </tr>
+                  </table>
+                </td>
+              </tr>`:'';
+  const ctaRow=ctaLabel?`
+              <tr>
+                <td align="center" style="padding:${d.ratings?'12px':'22px'} 24px 24px;">
+                  <a href="${escapeHtml(ctaUrl)}" target="_blank" rel="noopener" style="display:inline-block;background:#62BB45;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;text-decoration:none;padding:13px 26px;border-radius:999px;">${escapeHtml(ctaLabel)}</a>
+                </td>
+              </tr>`:'';
+  return `
+          <tr>
+            <td style="padding:0 40px 28px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1B3D24;border-radius:14px;">
+                ${ratingsRow}
+                ${ctaRow}
+              </table>
+            </td>
+          </tr>`;
+}
+function dripEmailHtml(id, opts){
+  const preview=!!(opts&&opts.preview);
+  const hosted=!!(opts&&opts.hosted);
+  const d=dripData(id);
+  const logo=opts&&opts.logo;
+  const subject=(d.subject||'').trim()||'XVET';
+  const tagline=(d.tagline||'Care today for a better tomorrow').trim();
+  const signoff=(d.signoff||'XVET GmbH').trim();
+  const motto=(d.motto||tagline).trim();
+  const introHtml=dripParaHtml(d.intro);
+  const closerHtml=dripParaHtml(d.closer);
+  const quote=(d.quote||'').trim().replace(/^[\u201c"']+|[\u201d"']+$/g,'');
+  const qName=(d.quoteName||'').trim();
+  const qRole=(d.quoteRole||'').trim();
+  const preheader=dripParas(d.intro)[0]||subject;
+  const empty=!introHtml && !closerHtml && !quote;
+  const emptyHtml=empty
+    ? `<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#6B7A70;font-style:italic;">Add your copy on the left. The subject becomes the bold title above.</p>`
+    : '';
+  const quoteBlock=(quote||qName||qRole)?`
+          <tr>
+            <td style="padding:0 40px 28px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F4FBF5;border-left:4px solid #62BB45;border-radius:0 12px 12px 0;">
+                ${quote?`<tr>
+                  <td style="padding:22px 24px 18px;font-family:Georgia,'Times New Roman',Times,serif;font-size:17px;line-height:1.6;color:#14321F;font-style:italic;">
+                    \u201c${escapeHtml(quote)}\u201d
+                  </td>
+                </tr>`:''}
+                ${(qName||qRole)?`<tr>
+                  <td style="padding:${quote?'0':'18px'} 24px 20px;font-family:Arial,Helvetica,sans-serif;">
+                    ${qName?`<p style="margin:0;font-size:14px;font-weight:700;color:#00672F;">${escapeHtml(qName)}</p>`:''}
+                    ${qRole?`<p style="margin:4px 0 0;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#6B7A70;">${escapeHtml(qRole)}</p>`:''}
+                  </td>
+                </tr>`:''}
+              </table>
+            </td>
+          </tr>`:'';
+  const statsBlock=d.stats?`
+          <tr>
+            <td style="padding:0 40px 36px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td width="33%" align="center" style="padding:14px 8px;font-family:Arial,Helvetica,sans-serif;">
+                    <p style="margin:0;font-size:22px;font-weight:700;color:#00672F;letter-spacing:-.03em;">24</p>
+                    <p style="margin:4px 0 0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B7A70;">Years</p>
+                  </td>
+                  <td width="33%" align="center" style="padding:14px 8px;border-left:1px solid #D2E3D6;border-right:1px solid #D2E3D6;font-family:Arial,Helvetica,sans-serif;">
+                    <p style="margin:0;font-size:22px;font-weight:700;color:#00672F;letter-spacing:-.03em;">60+</p>
+                    <p style="margin:4px 0 0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B7A70;">Countries</p>
+                  </td>
+                  <td width="33%" align="center" style="padding:14px 8px;font-family:Arial,Helvetica,sans-serif;">
+                    <p style="margin:0;font-size:15px;font-weight:700;color:#00672F;line-height:1.25;">One partnership<br>at a time</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>`:'';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escapeHtml(subject)} \u2014 XVET</title>
+</head>
+<body style="margin:0;padding:0;background:#E9EEEA;">
+  <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#E9EEEA;">
+    ${escapeHtml(preheader)}
+  </div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#E9EEEA;">
+    <tr>
+      <td align="center" style="padding:28px 12px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:100%;background:#ffffff;border-radius:18px;overflow:hidden;">
+          <tr>
+            <td style="background:#ffffff;padding:22px 36px 16px;border-bottom:1px solid #E2E9E3;">
+              ${dripLogoHeaderHtml(logo, hosted)}
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#00672F;padding:12px 36px;">
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#B7E89A;font-weight:700;">${escapeHtml(tagline)}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="height:4px;background:#62BB45;font-size:0;line-height:0;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td style="padding:32px 40px 20px;font-family:Arial,Helvetica,sans-serif;">
+              <h1 style="margin:0;font-size:26px;line-height:1.25;font-weight:700;color:#0A3D1F;letter-spacing:-.03em;">${escapeHtml(subject)}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 40px 28px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.7;color:#33463B;">
+              ${introHtml||emptyHtml}
+            </td>
+          </tr>
+          ${quoteBlock}
+          ${closerHtml?`<tr>
+            <td style="padding:0 40px 28px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.7;color:#33463B;">
+              ${closerHtml}
+            </td>
+          </tr>`:''}
+          ${dripVideoHtml(d.video, preview && !hosted)}
+          ${dripRatingsHtml(d)}
+          ${statsBlock}
+          <tr>
+            <td style="background:#004E23;padding:26px 40px;">
+              <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#ffffff;">${escapeHtml(signoff)}</p>
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#B7E89A;">${escapeHtml(motto)}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+function renderDripPreview(){
+  const id=currentDripId();
+  const d=dripData(id);
+  const s=document.getElementById('ofSubject');
+  if(s) s.textContent=(d.subject||'').trim()||'Add a subject on the left';
+  const paint=logo=>{
+    const frame=document.getElementById('ofDripFrame');
+    if(frame) frame.srcdoc=dripEmailHtml(id,{preview:true,logo:logo});
+  };
+  if(dripLogoDataUri) paint(dripLogoDataUri);
+  else paint(dripLogoFileUrl());
+  loadDripLogo().then(paint).catch(()=>{});
+}
+function dripPlainText(id){
+  const d=dripData(id);
+  const bits=[
+    (d.subject||'').trim(),
+    (d.tagline||'').trim(),
+    (d.intro||'').trim(),
+    (d.quote||'').trim()?(d.quoteName||d.quoteRole
+      ? `"${(d.quote||'').trim()}" — ${(d.quoteName||'').trim()}${(d.quoteRole||'').trim()?`, ${d.quoteRole.trim()}`:''}`
+      : `"${(d.quote||'').trim()}"`):'',
+    (d.closer||'').trim(),
+    (d.video||'').trim(),
+    (d.ctaLabel||'').trim() && (d.ctaUrl||'').trim() ? `${d.ctaLabel.trim()}: ${d.ctaUrl.trim()}` : '',
+    (d.signoff||'XVET GmbH').trim(),
+    (d.motto||'').trim()
+  ].filter(Boolean);
+  return bits.join('\n\n');
+}
+function copyHtmlPretty(html, plain, okMsg){
+  const ok=()=>alert(okMsg);
+  if(navigator.clipboard && window.ClipboardItem && window.isSecureContext){
+    navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': new Blob([html],{type:'text/html'}),
+        'text/plain': new Blob([plain||html],{type:'text/plain'})
+      })
+    ]).then(ok,()=>copyHtmlViaExec(html, okMsg));
+    return;
+  }
+  copyHtmlViaExec(html, okMsg);
+}
+function copyHtmlViaExec(html, okMsg){
+  const el=document.createElement('div');
+  el.contentEditable='true';
+  el.setAttribute('aria-hidden','true');
+  el.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;';
+  el.innerHTML=html;
+  document.body.appendChild(el);
+  const range=document.createRange();
+  range.selectNodeContents(el);
+  const sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let copied=false;
+  try{ copied=document.execCommand('copy'); }catch(e){ copied=false; }
+  sel.removeAllRanges();
+  el.remove();
+  if(copied) alert(okMsg);
+  else copyText(html, okMsg);
+}
+function withDripHtml(fn, opts){
+  const extra=opts||{};
+  if(extra.hosted){
+    fn(dripEmailHtml(currentDripId(),{hosted:true, logo:extra.logo||''}));
+    return;
+  }
+  loadDripLogo().then(logo=>fn(dripEmailHtml(currentDripId(),Object.assign({logo}, extra)))).catch(()=>{
+    fn(dripEmailHtml(currentDripId(), extra));
+  });
+}
+function copyDripEmail(){
+  withDripHtml(html=>{
+    copyHtmlPretty(
+      html,
+      dripPlainText(currentDripId()),
+      'Designed email copied. Paste it into Gmail or another mail compose window.'
+    );
+  });
+}
+function copyDripCode(){
+  withDripHtml(html=>{
+    copyText(html,'Mailchimp HTML copied. Paste it into the campaign HTML editor.');
+  }, {hosted:true});
+}
+function copyDripHtml(){ copyDripEmail(); }
 
 function exportSummary(){
   const co=document.getElementById('company').value||document.getElementById('pcCompany').value||'—';
