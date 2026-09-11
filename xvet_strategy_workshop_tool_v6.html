@@ -2487,6 +2487,7 @@ body.presenting .internal-only{display:none}
             <span class="eyebrow" style="color:#B7E89A" id="ofDraftLabel">Email draft</span>
             <span class="mh-actions">
               <button class="cta" id="ofCopyBtn" onclick="copyCurrentOffer()">Copy email</button>
+              <button class="cta ghost" id="ofMailchimpImgBtn" onclick="downloadDripMailchimpImages()" style="display:none">Download images</button>
               <button class="cta ghost" id="ofCopyCodeBtn" onclick="copyCurrentOfferCode()" style="display:none">Copy code</button>
             </span>
           </div>
@@ -7245,11 +7246,20 @@ function loadDripLogo(){
   }));
 }
 function isPublicHttpImageUrl(url){
-  const u=String(url||'').trim();
+  let u=String(url||'').trim();
+  if(!u) return false;
+  u=u.replace(/^['"<\s]+|['">\s]+$/g,'');
+  // Reject placeholder-looking values (ellipsis / truncated paste)
+  if(/[…\u2026]/.test(u) || /\.\.\./.test(u)) return false;
   if(!/^https:\/\//i.test(u)) return false;
   if(/^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(u)) return false;
   if(/^data:/i.test(u) || /^blob:/i.test(u) || /^file:/i.test(u)) return false;
+  try{ const parsed=new URL(u); if(!parsed.hostname) return false; }catch(e){ return false; }
   return true;
+}
+function normalizePublicImageUrl(url){
+  let u=String(url||'').trim().replace(/^['"<\s]+|['">\s]+$/g,'');
+  return isPublicHttpImageUrl(u)?u:'';
 }
 function dripLogoMarkHtml(){
   return `<span style="display:inline-block;font-family:Arial,Helvetica,sans-serif;font-size:36px;line-height:1;font-weight:700;letter-spacing:-.04em;"><span style="color:#005F27;">x</span><span style="color:#62BB45;">vet</span></span>`;
@@ -7260,8 +7270,163 @@ function dripLogoHeaderHtml(logo, hosted){
     : String(logo||dripLogoDataUri||dripLogoFileUrl()||'').trim();
   const inner=(hosted && !src)
     ? dripLogoMarkHtml()
-    : `<img src="${src}" alt="XVET GmbH" width="132" height="46" style="display:block;width:132px;height:auto;border:0;outline:none;">`;
-  return `<a href="https://xvetgermany.com/" target="_blank" rel="noopener" style="text-decoration:none;">${inner}</a>`;
+    : `<img src="${src}" alt="XVET GmbH" width="132" height="46" style="display:block;width:132px;height:46px;border:0;outline:none;-ms-interpolation-mode:bicubic;">`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="132" style="border-collapse:collapse;">
+                <tr>
+                  <td width="132" height="46" style="width:132px;height:46px;line-height:0;font-size:0;">
+                    <a href="https://xvetgermany.com/" target="_blank" rel="noopener" style="display:block;text-decoration:none;border:0;line-height:0;">${inner}</a>
+                  </td>
+                </tr>
+              </table>`;
+}
+function dripPublicLogoUrl(){
+  ensureDripState();
+  return String((state.drip&&state.drip.logoUrl)||'').trim();
+}
+function setDripLogoUrl(val){
+  ensureDripState();
+  state.drip.logoUrl=normalizePublicImageUrl(val) || String(val||'').trim();
+  renderDripPreview();
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
+}
+function dripNeedsPublicImage(d){
+  return !!(d&&String(d.image||'').trim());
+}
+function dripHasPublicImage(d){
+  return !!normalizePublicImageUrl(d&&d.imageUrl) || !!normalizePublicImageUrl(d&&d.image);
+}
+function dripMailchimpReady(id){
+  const d=dripData(id||currentDripId());
+  const logoOk=!!normalizePublicImageUrl(dripPublicLogoUrl());
+  const imageOk=!dripNeedsPublicImage(d) || dripHasPublicImage(d);
+  return {ok:logoOk&&imageOk, logoOk, imageOk, d};
+}
+function downloadBlobFile(filename, blob){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+function downloadDripMailchimpImages(){
+  const id=currentDripId();
+  const d=dripData(id);
+  const jobs=[{path:'assets/xvet-logo.png', name:'xvet-logo.png'}];
+  if((d.image||'').trim()){
+    const name=String(d.image).split('/').pop()||'drip-graphic.jpg';
+    jobs.push({path:d.image, name});
+  }
+  if((d.videoThumb||'').trim()){
+    const name=String(d.videoThumb).split('/').pop()||'drip1-video-thumb.jpg';
+    jobs.push({path:d.videoThumb, name});
+  }else if(dripYoutubeId(d.video)){
+    const vid=dripYoutubeId(d.video);
+    jobs.push({path:'https://i.ytimg.com/vi/'+vid+'/maxresdefault.jpg', name:'drip1-video-thumb.jpg', remote:true});
+  }
+  Promise.all(jobs.map(job=>{
+    const url=job.remote?job.path:dripImageFileUrl(job.path);
+    return fetch(url).then(r=>{
+      if(!r.ok) throw new Error(job.path);
+      return r.blob().then(blob=>({name:job.name, blob}));
+    });
+  })).then(files=>{
+    files.forEach((f,i)=>setTimeout(()=>downloadBlobFile(f.name, f.blob), i*250));
+    alert('Downloaded ' + files.map(f=>f.name).join(', ') + '.\n\nNext:\n1) Mailchimp → Content → File Manager → Upload\n2) Open each image → Copy URL\n3) Paste the logo / support / video-thumb URLs into the Mailchimp fields on the left\n4) Click Copy code');
+  }).catch(()=>alert('Could not download the image files. Check that the local assets are available.'));
+}
+
+const dripImageDataUriByPath={};
+function dripImageFileUrl(path){
+  const p=String(path||'').trim();
+  if(!p) return '';
+  if(/^https?:\/\//i.test(p) || /^data:/i.test(p)) return p;
+  try{ return new URL(p, document.baseURI).href; }catch(e){ return p; }
+}
+function loadDripImage(path){
+  const key=String(path||'').trim();
+  if(!key) return Promise.resolve('');
+  if(/^data:/i.test(key)) return Promise.resolve(key);
+  if(isPublicHttpImageUrl(key)) return Promise.resolve(key);
+  if(dripImageDataUriByPath[key]) return Promise.resolve(dripImageDataUriByPath[key]);
+  const url=dripImageFileUrl(key);
+  return fetch(url).then(r=>{
+    if(!r.ok) throw new Error('image');
+    return r.blob();
+  }).then(blob=>new Promise((resolve,reject)=>{
+    const fr=new FileReader();
+    fr.onload=()=>{
+      dripImageDataUriByPath[key]=String(fr.result||'');
+      resolve(dripImageDataUriByPath[key]);
+    };
+    fr.onerror=reject;
+    fr.readAsDataURL(blob);
+  }));
+}
+function resolveDripImageSrc(d, opts){
+  const hosted=!!(opts&&opts.hosted);
+  const embedded=String((opts&&opts.image)||'').trim();
+  const publicUrl=String((d&&d.imageUrl)||'').trim();
+  const local=String((d&&d.image)||'').trim();
+  if(hosted){
+    if(isPublicHttpImageUrl(publicUrl)) return publicUrl;
+    if(isPublicHttpImageUrl(local)) return local;
+    return '';
+  }
+  if(embedded) return embedded;
+  if(isPublicHttpImageUrl(publicUrl)) return publicUrl;
+  if(/^data:/i.test(local)) return local;
+  if(local && dripImageDataUriByPath[local]) return dripImageDataUriByPath[local];
+  // Avoid file:// or relative URLs inside srcdoc / clipboard HTML — they break there.
+  return '';
+}
+function dripImageBlockHtml(d, opts){
+  const src=resolveDripImageSrc(d, opts);
+  if(!src) return '';
+  const alt=escapeHtml((d.imageAlt||'').trim() || 'XVET partner support');
+  return `
+          <tr>
+            <td style="padding:0 40px 24px;">
+              <img src="${src}" alt="${alt}" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:14px;outline:none;">
+            </td>
+          </tr>`;
+}
+function dripClosingBoxHtml(text){
+  const body=String(text||'').trim();
+  if(!body) return '';
+  return `
+          <tr>
+            <td style="padding:0 40px 28px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F4FBF5;border:1px solid #D2E3D6;border-radius:14px;">
+                <tr>
+                  <td style="padding:22px 24px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.65;color:#14321F;">
+                    ${escapeHtml(body).replace(/\n/g,'<br>')}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>`;
+}
+function dripFinalLineHtml(text){
+  const line=String(text||'').trim();
+  if(!line) return '';
+  return `
+          <tr>
+            <td align="center" style="padding:0 40px 32px;font-family:Georgia,'Times New Roman',Times,serif;font-size:16px;line-height:1.5;color:#00672F;font-style:italic;">
+              ${escapeHtml(line)}
+            </td>
+          </tr>`;
+}
+function dripCtaOnlyHtml(d){
+  const ctaLabel=(d.ctaLabel||'').trim();
+  const ctaUrl=(d.ctaUrl||'').trim()||'https://xvetgermany.com/';
+  if(!ctaLabel || d.ratings) return '';
+  return `
+          <tr>
+            <td align="center" style="padding:0 40px 28px;">
+              <a href="${escapeHtml(ctaUrl)}" target="_blank" rel="noopener" style="display:inline-block;background:#62BB45;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:999px;">${escapeHtml(ctaLabel)}</a>
+            </td>
+          </tr>`;
 }
 
 const DRIP_IDS=['drip1','drip2','drip3'];
@@ -7273,6 +7438,13 @@ const DRIP_EMPTY={
   quoteName:'',
   quoteRole:'',
   closer:'',
+  closingBox:'',
+  finalLine:'',
+  image:'',
+  imageUrl:'',
+  imageAlt:'',
+  videoThumb:'',
+  videoThumbUrl:'',
   signoff:'XVET GmbH',
   motto:'Care today for a better tomorrow',
   video:'',
@@ -7283,13 +7455,20 @@ const DRIP_EMPTY={
 };
 const DRIP_DEFAULTS={
   drip1:{
-    subject:'24 years. One partnership at a time.',
+    subject:'24 years. Proven products. Lasting partnerships.',
     tagline:'Care today for a better tomorrow',
-    intro:'For 24 years, XVET has grown together with animal health partners around the world.\n\nToday, XVET products are present in more than 60 countries. But for us, the more important number is how many partnerships continue year after year.\n\nBecause a successful distribution partnership isn\u2019t built on the first order.\n\nIt\u2019s built on what happens after it.',
+    intro:'For 24 years, XVET has grown together with animal health partners around the world.\n\nToday, XVET products are present in more than 50+ countries. But for us, the more important number is how many partnerships continue year after year.\n\nBecause a successful distribution partnership isn\u2019t built on the first order.\n\nIt\u2019s built on what happens after it.',
     quote:'XVET products are selling very well through our retail network, and our sales grow month after month. We are genuinely keen to expand the assortment, as demand for XVET solutions is developing steadily despite the difficult situation in Ukraine.',
     quoteName:'Andriy Polyakov',
     quoteRole:'XVET Partner \u00b7 Ukraine',
     closer:'Across changing economic conditions, challenging markets and even times of war, XVET products continue to deliver value to our partners and end-users around the world.\n\nThat resilience has shaped how we work: reliable products, long-term thinking, and partnerships built to last.',
+    closingBox:'',
+    finalLine:'',
+    image:'',
+    imageUrl:'',
+    imageAlt:'',
+    videoThumb:'assets/drip1-video-thumb.jpg',
+    videoThumbUrl:'',
     signoff:'XVET GmbH',
     motto:'Care today for a better tomorrow',
     video:'https://www.youtube.com/watch?v=Pacz-TfXkE8',
@@ -7298,8 +7477,42 @@ const DRIP_DEFAULTS={
     ctaLabel:'Read partner testimonials',
     stats:true
   },
-  drip2:Object.assign({}, DRIP_EMPTY),
-  drip3:Object.assign({}, DRIP_EMPTY)
+  drip2:{
+    subject:'More Than Products. Support Beyond the Offer.',
+    tagline:'Care today for a better tomorrow',
+    intro:'A successful distribution partnership requires more than products and commercial terms. XVET supports its partners from market preparation to product launch and long-term business development.',
+    image:'assets/drip2-support.jpg',
+    imageUrl:'',
+    imageAlt:'Support beyond the offer \u2014 prepare the market, launch the product, develop the business',
+    closer:'From market preparation to long-term growth, XVET supports partners at every stage. This includes assistance with registration documentation and technical positioning, launch materials and training, and ongoing technical and market-development support as the business grows.',
+    closingBox:'We aim to help partners build the technical knowledge, positioning and market support needed for sustainable growth.',
+    finalLine:'More than products. A partnership built for growth.',
+    signoff:'XVET GmbH',
+    motto:'Care today for a better tomorrow',
+    video:'',
+    ratings:false,
+    stats:false,
+    ctaUrl:'https://xvetgermany.com/our-company',
+    ctaLabel:'Grow with XVET'
+  },
+  drip3:{
+    subject:'Science Matters. Especially in the Field.',
+    tagline:'Care today for a better tomorrow',
+    intro:'In animal nutrition, strong decisions should be based on more than product claims. XVET values scientific understanding, field experience and measurable production parameters when evaluating nutritional solutions.\n\nOur Science in the Field approach connects scientific knowledge with practical application under real production conditions.',
+    image:'assets/drip3-science.jpg',
+    imageUrl:'',
+    imageAlt:'Science in the Field \u2014 from science to field application to measurable value',
+    closer:'Because science creates the most value when it can be translated into measurable results in the field.\n\nThe Science in the Field booklet brings together this approach and selected technical insights from XVET.',
+    closingBox:'',
+    finalLine:'Because science creates the most value when it works in the field.',
+    signoff:'XVET GmbH',
+    motto:'Care today for a better tomorrow',
+    video:'',
+    ratings:false,
+    stats:false,
+    ctaUrl:'https://heyzine.com/flip-book/1220c22a6c.html',
+    ctaLabel:'Explore Science in the Field'
+  }
 };
 
 function cloneDripEntry(id){
@@ -7307,11 +7520,23 @@ function cloneDripEntry(id){
 }
 function mergeDripSnapshot(saved){
   const out={};
-  DRIP_IDS.forEach(id=>out[id]=Object.assign(cloneDripEntry(id), (saved&&saved[id])||{}));
+  DRIP_IDS.forEach(id=>{
+    const base=cloneDripEntry(id);
+    const overlay=(saved&&saved[id])||{};
+    const hasContent=Object.keys(overlay).some(k=>{
+      if(!(k in DRIP_EMPTY)) return false;
+      const v=overlay[k];
+      if(typeof v==='boolean') return v!==!!DRIP_EMPTY[k] || v===true;
+      return String(v||'').trim().length>0;
+    });
+    out[id]=hasContent?Object.assign({}, base, overlay):base;
+  });
+  out.logoUrl=String((saved&&saved.logoUrl)||'').trim();
   return out;
 }
 function ensureDripState(){
   state.drip=mergeDripSnapshot(state.drip);
+  if(typeof state.drip.logoUrl!=='string') state.drip.logoUrl='';
   return state.drip;
 }
 function captureDripSnapshot(){
@@ -7356,12 +7581,14 @@ function setOfferTab(tab){
   if(btn) btn.textContent='Copy email';
   const codeBtn=document.getElementById('ofCopyCodeBtn');
   if(codeBtn) codeBtn.style.display=drip?'':'none';
+  const imgBtn=document.getElementById('ofMailchimpImgBtn');
+  if(imgBtn) imgBtn.style.display=drip?'':'none';
   const label=document.getElementById('ofDraftLabel');
   if(label) label.textContent=drip?'HTML draft':'Email draft';
   const foot=document.getElementById('ofMailFoot');
   if(foot){
     foot.textContent=drip
-      ? 'Copy email pastes the designed message into Gmail, with the logo embedded. Copy code is Mailchimp-safe: public image links only, no encoded files.'
+      ? 'Copy email embeds images for Gmail. Copy code is for Mailchimp and needs public HTTPS image URLs — use “Download images”, upload them in Mailchimp File Manager, paste the links on the left, then Copy code.'
       : 'The price and commercial offer is sent separately from the ERP. This email stays with the technical record.';
   }
   const prep=document.getElementById('offerPrepbar');
@@ -7385,10 +7612,30 @@ function renderDripFields(){
   const id=currentDripId();
   const n=id.replace('drip','');
   const d=dripData(id);
+  const logoUrl=dripPublicLogoUrl();
+  const visualDrip=id==='drip2'||id==='drip3';
+  const showQuote=!visualDrip;
+  const showVideo=!visualDrip;
+  const showRatingsStats=!visualDrip;
+  const ready=dripMailchimpReady(id);
   host.innerHTML=`
     <div class="eyebrow">Technical meeting &middot; Drip ${escapeHtml(n)}</div>
     <h2>Drip ${escapeHtml(n)}</h2>
     <p>Core copy is editable on the left. The subject line is also the bold title at the top of the HTML email.</p>
+    <div style="border:1px solid #D2E3D6;background:#F4FBF5;border-radius:12px;padding:12px 14px;margin:0 0 14px">
+      <div class="eyebrow" style="margin:0 0 6px">Mailchimp images</div>
+      <p style="margin:0 0 10px;font-size:12.5px;line-height:1.45;color:#33463B">Mailchimp cannot use embedded files. Download the images, upload them in <b>Content → File Manager</b>, then paste the public links below. This logo link is shared by Drip 1–3.</p>
+      <div><label>Logo public URL (all drips)</label>
+        <input value="${escapeHtml(logoUrl)}" placeholder="Paste Mailchimp File Manager link for xvet-logo.png"
+          oninput="setDripLogoUrl(this.value)"></div>
+      <div><label>Support image public URL (this drip)</label>
+        <input value="${escapeHtml(d.imageUrl)}" placeholder="${visualDrip?'Paste Mailchimp File Manager link for the support graphic':'Not needed unless this drip has a graphic'}"
+          oninput="setDripField('imageUrl',this.value)"></div>
+      ${showVideo?`<div><label>Video thumbnail public URL (Drip 1)</label>
+        <input value="${escapeHtml(d.videoThumbUrl)}" placeholder="Paste Mailchimp File Manager link for drip1-video-thumb.jpg"
+          oninput="setDripField('videoThumbUrl',this.value)"></div>`:''}
+      <p style="margin:8px 0 0;font-size:12px;color:${ready.ok?'#00672F':'#9A5B00'}">${ready.ok?'Mailchimp Copy code is ready for this drip.':(!ready.logoOk && !ready.imageOk)?'Paste public links above for Mailchimp images. Copy code still works without them.':!ready.logoOk?'Paste the logo public link above.':'Paste the support-image public link above.'}</p>
+    </div>
     <div><label>Subject</label>
       <input value="${escapeHtml(d.subject)}" placeholder="Subject and bold title in the email"
         oninput="setDripField('subject',this.value)"></div>
@@ -7398,7 +7645,13 @@ function renderDripFields(){
     <div><label>Opening</label>
       <textarea rows="8" placeholder="One paragraph per block. Separate with a blank line."
         oninput="setDripField('intro',this.value)">${escapeHtml(d.intro)}</textarea></div>
-    <div><label>Quote</label>
+    <div><label>Support image (local preview / Gmail embed)</label>
+      <input value="${escapeHtml(d.image)}" placeholder="assets/drip3-science.jpg"
+        oninput="setDripField('image',this.value)"></div>
+    <div><label>Image alt text</label>
+      <input value="${escapeHtml(d.imageAlt)}" placeholder="Describe the support graphic"
+        oninput="setDripField('imageAlt',this.value)"></div>
+    ${showQuote?`<div><label>Quote</label>
       <textarea rows="5" placeholder="Partner quote (optional)"
         oninput="setDripField('quote',this.value)">${escapeHtml(d.quote)}</textarea></div>
     <div class="grid2">
@@ -7408,27 +7661,36 @@ function renderDripFields(){
       <div><label>Quote role</label>
         <input value="${escapeHtml(d.quoteRole)}" placeholder="e.g. XVET Partner · Ukraine"
           oninput="setDripField('quoteRole',this.value)"></div>
-    </div>
-    <div><label>After the quote</label>
+    </div>`:''}
+    <div><label>${visualDrip?'Under the image':'After the quote'}</label>
       <textarea rows="5" placeholder="Closing paragraphs"
         oninput="setDripField('closer',this.value)">${escapeHtml(d.closer)}</textarea></div>
-    <div><label>YouTube video</label>
+    <div><label>Closing box</label>
+      <textarea rows="4" placeholder="Highlighted objective box (optional)"
+        oninput="setDripField('closingBox',this.value)">${escapeHtml(d.closingBox)}</textarea></div>
+    ${showVideo?`<div><label>YouTube video</label>
       <input value="${escapeHtml(d.video)}" placeholder="https://www.youtube.com/watch?v=\u2026"
         oninput="setDripField('video',this.value)"></div>
+    <div><label>Video thumbnail (local / Gmail embed)</label>
+      <input value="${escapeHtml(d.videoThumb)}" placeholder="assets/drip1-video-thumb.jpg"
+        oninput="setDripField('videoThumb',this.value)"></div>`:''}
     <div><label>Button label</label>
-      <input value="${escapeHtml(d.ctaLabel)}" placeholder="Read partner testimonials"
+      <input value="${escapeHtml(d.ctaLabel)}" placeholder="Explore Science in the Field"
         oninput="setDripField('ctaLabel',this.value)"></div>
     <div><label>Button link</label>
-      <input value="${escapeHtml(d.ctaUrl)}" placeholder="https://xvetgermany.com/testimonial"
+      <input value="${escapeHtml(d.ctaUrl)}" placeholder="https://heyzine.com/flip-book/1220c22a6c.html"
         oninput="setDripField('ctaUrl',this.value)"></div>
-    <label class="drip-check">
+    <div><label>Final line</label>
+      <input value="${escapeHtml(d.finalLine)}" placeholder="Because science creates the most value when it works in the field."
+        oninput="setDripField('finalLine',this.value)"></div>
+    ${showRatingsStats?`<label class="drip-check">
       <input type="checkbox" ${d.ratings?'checked':''} onchange="setDripField('ratings',this.checked)">
       Show partner ratings (4.79 / 4.58 / 4.54)
     </label>
     <label class="drip-check">
       <input type="checkbox" ${d.stats?'checked':''} onchange="setDripField('stats',this.checked)">
-      Show 24 / 60+ / partnership stats row
-    </label>
+      Show 24 / 50+ / partnership stats row
+    </label>`:''}
   `;
 }
 function dripParas(text){
@@ -7445,38 +7707,91 @@ function dripYoutubeId(url){
   const m=String(url||'').trim().match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/)|youtube-nocookie\.com\/embed\/)([A-Za-z0-9_-]{6,})/);
   return m?m[1]:'';
 }
-function dripVideoHtml(url, preview){
-  const vid=dripYoutubeId(url);
-  if(!vid) return '';
-  const watch='https://www.youtube.com/watch?v='+vid;
-  const inner=preview
-    ? `<iframe src="https://www.youtube.com/embed/${vid}?rel=0" title="XVET partner video" width="520" height="292" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="display:block;width:100%;max-width:520px;height:292px;border:0;border-radius:12px;background:#000;"></iframe>`
-    : `<a href="${watch}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
-        <img src="https://i.ytimg.com/vi/${vid}/hqdefault.jpg" alt="Watch the XVET partner video" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:12px;">
-      </a>
-      <p style="margin:10px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;">
-        <a href="${watch}" target="_blank" rel="noopener" style="color:#00672F;font-weight:700;text-decoration:none;">Watch the video &#9654;</a>
-      </p>`;
+function dripYoutubeThumbCandidates(vid){
+  // Prefer true 16:9 sources. hqdefault is 480x360 with black bars and often looks "corrupt" in Gmail.
+  return [
+    'https://i.ytimg.com/vi/'+vid+'/maxresdefault.jpg',
+    'https://i.ytimg.com/vi/'+vid+'/sddefault.jpg',
+    'https://i.ytimg.com/vi/'+vid+'/mqdefault.jpg',
+    'https://img.youtube.com/vi/'+vid+'/hqdefault.jpg'
+  ];
+}
+function resolveDripVideoThumbSrc(d, opts){
+  const hosted=!!(opts&&opts.hosted);
+  const embedded=String((opts&&opts.videoThumb)||'').trim();
+  const publicUrl=normalizePublicImageUrl(d&&d.videoThumbUrl);
+  const local=String((d&&d.videoThumb)||'').trim();
+  const vid=dripYoutubeId(d&&d.video);
+  if(hosted){
+    if(publicUrl) return publicUrl;
+    // Prefer no hotlinked YouTube thumb in sent mail when possible — Gmail proxy often corrupts i.ytimg.com.
+    // Keep a 16:9 maxres URL only as last resort so the block is not empty.
+    if(vid) return dripYoutubeThumbCandidates(vid)[0];
+    return '';
+  }
+  if(embedded) return embedded;
+  if(publicUrl) return publicUrl;
+  if(/^data:/i.test(local)) return local;
+  if(local && dripImageDataUriByPath[local]) return dripImageDataUriByPath[local];
+  if(local){
+    // preview may use file URL briefly; prefer data URI when loaded
+    return dripImageDataUriByPath[local] || '';
+  }
+  if(vid) return dripYoutubeThumbCandidates(vid)[0];
+  return '';
+}
+function dripVideoHtml(d, opts){
+  const preview=!!(opts&&opts.preview);
+  const hosted=!!(opts&&opts.hosted);
+  const vid=dripYoutubeId(d&&d.video);
+  if(!vid && !(d&&(d.videoThumb||d.videoThumbUrl))) return '';
+  const watch=vid?('https://www.youtube.com/watch?v='+vid):String((d&&d.video)||'').trim();
+  if(!watch) return '';
+  if(preview && !hosted && vid){
+    return `
+          <tr>
+            <td align="center" style="padding:0 40px 28px;">
+              <iframe src="https://www.youtube.com/embed/${vid}?rel=0" title="XVET partner video" width="520" height="292" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="display:block;width:100%;max-width:520px;height:292px;border:0;background:#000;"></iframe>
+            </td>
+          </tr>`;
+  }
+  const thumb=resolveDripVideoThumbSrc(d, opts);
+  if(!thumb) return '';
+  // Gmail-safe: no border-radius on the image, fixed width, separate text CTA.
+  // Nested table keeps the thumb and play label reliable across clients.
   return `
           <tr>
             <td align="center" style="padding:0 40px 28px;">
-              ${inner}
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="520" style="width:100%;max-width:520px;">
+                <tr>
+                  <td align="center" bgcolor="#111111" style="background:#111111;">
+                    <a href="${escapeHtml(watch)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;border:0;outline:none;">
+                      <img src="${thumb}" alt="Watch the XVET partner video" width="520" height="293" style="display:block;width:100%;max-width:520px;height:auto;border:0;outline:none;line-height:0;">
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding:14px 0 0;font-family:Arial,Helvetica,sans-serif;">
+                    <a href="${escapeHtml(watch)}" target="_blank" rel="noopener" style="display:inline-block;background:#00672F;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:8px;">Watch the video &#9654;</a>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>`;
 }
 function dripRatingsHtml(d){
   const ctaLabel=(d.ctaLabel||'').trim() || (d.ratings ? 'Read partner testimonials' : '');
   const ctaUrl=(d.ctaUrl||'https://xvetgermany.com/testimonial').trim()||'https://xvetgermany.com/testimonial';
-  if(!d.ratings && !ctaLabel) return '';
+  if(!d.ratings) return '';
   const score=(n,label)=>`
                   <td width="33%" align="center" valign="top" style="padding:10px 8px;font-family:Arial,Helvetica,sans-serif;">
                     <p style="margin:0;line-height:1;font-size:30px;font-weight:700;color:#ffffff;letter-spacing:-.03em;">${n}<span style="font-size:15px;font-weight:600;color:#B7E89A;"> / 5</span></p>
                     <p style="margin:8px 0 0;font-size:13px;line-height:1.3;color:#ffffff;">${label}</p>
                   </td>`;
-  const ratingsRow=d.ratings?`
+  const ratingsRow=`
               <tr>
                 <td style="padding:20px 24px 6px;font-family:Arial,Helvetica,sans-serif;">
-                  <p style="margin:0;font-size:13px;line-height:1.4;color:#B7E89A;">Rated by XVET partners in more than 60 countries</p>
+                  <p style="margin:0;font-size:13px;line-height:1.4;color:#B7E89A;">Rated by XVET partners in more than 50 countries</p>
                 </td>
               </tr>
               <tr>
@@ -7489,10 +7804,10 @@ function dripRatingsHtml(d){
                     </tr>
                   </table>
                 </td>
-              </tr>`:'';
+              </tr>`;
   const ctaRow=ctaLabel?`
               <tr>
-                <td align="center" style="padding:${d.ratings?'12px':'22px'} 24px 24px;">
+                <td align="center" style="padding:12px 24px 24px;">
                   <a href="${escapeHtml(ctaUrl)}" target="_blank" rel="noopener" style="display:inline-block;background:#62BB45;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;text-decoration:none;padding:13px 26px;border-radius:999px;">${escapeHtml(ctaLabel)}</a>
                 </td>
               </tr>`:'';
@@ -7521,7 +7836,7 @@ function dripEmailHtml(id, opts){
   const qName=(d.quoteName||'').trim();
   const qRole=(d.quoteRole||'').trim();
   const preheader=dripParas(d.intro)[0]||subject;
-  const empty=!introHtml && !closerHtml && !quote;
+  const empty=!introHtml && !closerHtml && !quote && !(d.closingBox||'').trim() && !resolveDripImageSrc(d, opts);
   const emptyHtml=empty
     ? `<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#6B7A70;font-style:italic;">Add your copy on the left. The subject becomes the bold title above.</p>`
     : '';
@@ -7553,11 +7868,11 @@ function dripEmailHtml(id, opts){
                     <p style="margin:4px 0 0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B7A70;">Years</p>
                   </td>
                   <td width="33%" align="center" style="padding:14px 8px;border-left:1px solid #D2E3D6;border-right:1px solid #D2E3D6;font-family:Arial,Helvetica,sans-serif;">
-                    <p style="margin:0;font-size:22px;font-weight:700;color:#00672F;letter-spacing:-.03em;">60+</p>
+                    <p style="margin:0;font-size:22px;font-weight:700;color:#00672F;letter-spacing:-.03em;">50+</p>
                     <p style="margin:4px 0 0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B7A70;">Countries</p>
                   </td>
                   <td width="33%" align="center" style="padding:14px 8px;font-family:Arial,Helvetica,sans-serif;">
-                    <p style="margin:0;font-size:15px;font-weight:700;color:#00672F;line-height:1.25;">One partnership<br>at a time</p>
+                    <p style="margin:0;font-size:14px;font-weight:700;color:#00672F;line-height:1.3;">Proven products.<br>Lasting partnerships.</p>
                   </td>
                 </tr>
               </table>
@@ -7601,14 +7916,18 @@ function dripEmailHtml(id, opts){
               ${introHtml||emptyHtml}
             </td>
           </tr>
+          ${dripImageBlockHtml(d, opts)}
           ${quoteBlock}
           ${closerHtml?`<tr>
             <td style="padding:0 40px 28px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.7;color:#33463B;">
               ${closerHtml}
             </td>
           </tr>`:''}
-          ${dripVideoHtml(d.video, preview && !hosted)}
+          ${dripClosingBoxHtml(d.closingBox)}
+          ${dripVideoHtml(d, opts)}
           ${dripRatingsHtml(d)}
+          ${dripCtaOnlyHtml(d)}
+          ${dripFinalLineHtml(d.finalLine)}
           ${statsBlock}
           <tr>
             <td style="background:#004E23;padding:26px 40px;">
@@ -7628,13 +7947,20 @@ function renderDripPreview(){
   const d=dripData(id);
   const s=document.getElementById('ofSubject');
   if(s) s.textContent=(d.subject||'').trim()||'Add a subject on the left';
-  const paint=logo=>{
+  const paint=(logo, image, videoThumb)=>{
     const frame=document.getElementById('ofDripFrame');
-    if(frame) frame.srcdoc=dripEmailHtml(id,{preview:true,logo:logo});
+    if(frame) frame.srcdoc=dripEmailHtml(id,{preview:true,logo:logo,image:image||'',videoThumb:videoThumb||''});
   };
-  if(dripLogoDataUri) paint(dripLogoDataUri);
-  else paint(dripLogoFileUrl());
-  loadDripLogo().then(paint).catch(()=>{});
+  const logoReady=dripLogoDataUri?Promise.resolve(dripLogoDataUri):loadDripLogo().catch(()=>dripLogoFileUrl());
+  const imageReady=(d.image||d.imageUrl)
+    ? loadDripImage(d.image).catch(()=>resolveDripImageSrc(d,{}))
+    : Promise.resolve('');
+  const thumbReady=(d.videoThumb||d.videoThumbUrl)
+    ? loadDripImage(d.videoThumb).catch(()=>resolveDripVideoThumbSrc(d,{}))
+    : Promise.resolve('');
+  Promise.all([logoReady, imageReady, thumbReady]).then(([logo, image, videoThumb])=>paint(logo, image, videoThumb)).catch(()=>{
+    paint(dripLogoDataUri||dripLogoFileUrl(), resolveDripImageSrc(d,{}), resolveDripVideoThumbSrc(d,{}));
+  });
 }
 function dripPlainText(id){
   const d=dripData(id);
@@ -7646,8 +7972,10 @@ function dripPlainText(id){
       ? `"${(d.quote||'').trim()}" — ${(d.quoteName||'').trim()}${(d.quoteRole||'').trim()?`, ${d.quoteRole.trim()}`:''}`
       : `"${(d.quote||'').trim()}"`):'',
     (d.closer||'').trim(),
+    (d.closingBox||'').trim(),
     (d.video||'').trim(),
     (d.ctaLabel||'').trim() && (d.ctaUrl||'').trim() ? `${d.ctaLabel.trim()}: ${d.ctaUrl.trim()}` : '',
+    (d.finalLine||'').trim(),
     (d.signoff||'XVET GmbH').trim(),
     (d.motto||'').trim()
   ].filter(Boolean);
@@ -7687,11 +8015,18 @@ function copyHtmlViaExec(html, okMsg){
 }
 function withDripHtml(fn, opts){
   const extra=opts||{};
+  const d=dripData(currentDripId());
   if(extra.hosted){
-    fn(dripEmailHtml(currentDripId(),{hosted:true, logo:extra.logo||''}));
+    const logo=normalizePublicImageUrl(extra.logo || dripPublicLogoUrl()) || (extra.logo || dripPublicLogoUrl());
+    fn(dripEmailHtml(currentDripId(),{hosted:true, logo, image:'', videoThumb:''}));
     return;
   }
-  loadDripLogo().then(logo=>fn(dripEmailHtml(currentDripId(),Object.assign({logo}, extra)))).catch(()=>{
+  const logoP=loadDripLogo().catch(()=>'');
+  const imageP=(d.image||d.imageUrl)?loadDripImage(d.image).catch(()=>''):Promise.resolve('');
+  const thumbP=(d.videoThumb||d.videoThumbUrl)?loadDripImage(d.videoThumb).catch(()=>''):Promise.resolve('');
+  Promise.all([logoP, imageP, thumbP]).then(([logo, image, videoThumb])=>{
+    fn(dripEmailHtml(currentDripId(),Object.assign({logo, image, videoThumb}, extra)));
+  }).catch(()=>{
     fn(dripEmailHtml(currentDripId(), extra));
   });
 }
@@ -7705,9 +8040,21 @@ function copyDripEmail(){
   });
 }
 function copyDripCode(){
+  const ready=dripMailchimpReady();
+  const logo=normalizePublicImageUrl(dripPublicLogoUrl()) || dripPublicLogoUrl();
   withDripHtml(html=>{
-    copyText(html,'Mailchimp HTML copied. Paste it into the campaign HTML editor.');
-  }, {hosted:true});
+    const missing=[];
+    if(!ready.logoOk) missing.push('logo');
+    if(!ready.imageOk) missing.push('support image');
+    const d=dripData(currentDripId());
+    if((d.video||d.videoThumb) && !normalizePublicImageUrl(d.videoThumbUrl)) missing.push('video thumbnail');
+    copyText(
+      html,
+      missing.length
+        ? 'HTML copied. For best Gmail/Mailchimp results, also paste public File Manager links for: '+missing.join(', ')+'.'
+        : 'Mailchimp HTML copied. Paste it into the campaign HTML editor.'
+    );
+  }, {hosted:true, logo});
 }
 function copyDripHtml(){ copyDripEmail(); }
 
