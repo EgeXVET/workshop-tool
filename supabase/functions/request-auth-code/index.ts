@@ -29,9 +29,12 @@ function isAllowedRedirect(raw: string) {
     if (url.protocol !== "http:" && url.protocol !== "https:") return false;
     if (url.hostname.endsWith(".supabase.co")) return false;
     const host = url.hostname;
+    const path = url.pathname;
     const local = host === "localhost" || host === "127.0.0.1";
-    const workshopPage = /xvet_strategy_workshop_tool_v6\.html$/i.test(url.pathname);
-    return local || workshopPage;
+    const workshopPage = /xvet_strategy_workshop_tool_v6\.html$/i.test(path);
+    const githubPages = host === "egexvet.github.io" &&
+      /^\/(workshop-tool|xvet-partner-journey)(\/|\/index\.html)?$/i.test(path);
+    return local || workshopPage || githubPages;
   } catch {
     return false;
   }
