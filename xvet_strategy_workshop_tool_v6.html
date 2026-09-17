@@ -51,6 +51,33 @@ button{cursor:pointer}
 .navsteps button.active{background:var(--xg);color:#fff;border-color:var(--xg)}
 .navsteps button.prep{background:#FFF3EE;border-color:#F8C4AE;color:#B93C10}
 .navsteps button.prep.active{background:var(--or);color:#fff;border-color:var(--or)}
+.auth-gate{
+  position:fixed;inset:0;z-index:200;display:grid;place-items:center;
+  background:#E8F3E6;padding:24px
+}
+body.authed .auth-gate{display:none}
+body:not(.authed) .app{display:none}
+.auth-card{
+  width:min(420px,100%);background:#fff;border-radius:22px;padding:34px 32px 28px;
+  box-shadow:0 18px 50px rgba(0,60,25,.1);text-align:center
+}
+.auth-card .auth-logo{height:40px;width:auto;display:block;margin:0 auto 22px}
+.auth-card h1{font-size:22px;margin:0 0 6px;letter-spacing:-.03em}
+.auth-card .auth-lead{font-size:13.5px;color:var(--muted);margin:0 0 20px}
+.auth-card label{text-align:left;margin-top:10px}
+.auth-card input{text-align:left}
+.auth-card .cta{width:100%;margin-top:16px;padding:12px 16px}
+.auth-card .cta.ghost{margin-top:8px}
+.auth-err{min-height:18px;margin:10px 0 0;font-size:12.5px;color:#B93C10;text-align:left}
+.auth-err.ok{color:var(--xg)}
+.auth-hint{font-size:13px;color:var(--muted);margin:0 0 14px;line-height:1.5}
+.auth-hint b{color:var(--ink);font-weight:600}
+.top-signout{
+  border:1px solid var(--line);background:#fff;color:var(--muted);
+  padding:7px 11px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;flex:0 0 auto
+}
+.top-signout:hover{border-color:var(--xg-l);color:var(--xg)}
+body:not(.authed) .top-signout{display:none}
 
 /* ---------- generic ---------- */
 .screen{display:none;padding:26px 26px 70px}
@@ -76,6 +103,7 @@ a{color:var(--xg)}
 
 label{display:block;margin:12px 0 5px;font-size:11.5px;font-weight:600;letter-spacing:.04em;
   text-transform:uppercase;color:var(--muted)}
+[hidden]{display:none !important}
 input,select,textarea{
   width:100%;border:1px solid #CFDACF;border-radius:11px;padding:11px 12px;background:#fff;outline:none
 }
@@ -1347,6 +1375,25 @@ body.presenting .internal-only{display:none}
 </style>
 </head>
 <body>
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <img class="auth-logo" src="assets/xvet-logo.svg" alt="XVET GmbH">
+    <h1>Sign in</h1>
+    <p class="auth-lead">XVET work emails only (@xvetgermany.com).</p>
+    <form id="authForm" onsubmit="event.preventDefault();submitAuthForm()">
+      <div id="authFields">
+        <label for="authEmail">Work email</label>
+        <input id="authEmail" type="email" autocomplete="username" placeholder="name@xvetgermany.com" required>
+        <button class="cta dark" type="submit" id="authSubmit">Sign in</button>
+      </div>
+      <div id="authSent" hidden>
+        <p class="auth-hint">Open the email we sent to <b id="authSentEmail"></b> and tap the sign-in link. It returns you to this workshop.</p>
+        <button class="cta ghost" type="button" onclick="resetAuthForm()">Use a different email</button>
+      </div>
+      <p class="auth-err" id="authErr"></p>
+    </form>
+  </div>
+</div>
 <div class="app">
   <header class="topbar">
     <img class="logo" src="assets/xvet-logo.svg" alt="XVET GmbH" />
@@ -1358,6 +1405,7 @@ body.presenting .internal-only{display:none}
       <div class="navdd" id="navgroups"></div>
       <div class="navsteps" id="navsteps"></div>
     </div>
+    <button class="top-signout" id="topSignOut" type="button" onclick="cloudSignOut()">Sign out</button>
   </header>
 
   <div id="selectOverlay" class="select-overlay" aria-hidden="true">
@@ -1394,7 +1442,7 @@ body.presenting .internal-only{display:none}
           <option value="demo:2">Mekong Livestock &middot; Viet Nam &middot; swine-led &middot; decision maker absent</option>
           <option value="demo:3">Sahel Agrivet &middot; Nigeria &middot; layer + dairy &middot; knock-out demo</option>
         </select>
-        <button class="demonew" type="button" onclick="newSavedProfile()" title="Create a blank customer. Everything you enter is saved in this browser.">New profile</button>
+        <button class="demonew" type="button" onclick="newSavedProfile()" title="Create a blank customer. Signed-in users save to the team database.">New profile</button>
         <button class="democlear" onclick="clearDemo()">Reset</button>
       </div>
     </div>
@@ -2358,12 +2406,12 @@ body.presenting .internal-only{display:none}
         <aside class="tprod-note tqa-note">
           <span class="tprod-fold"></span>
           <div class="tprod-note-k">Questions and feedback from the customer</div>
-          <textarea id="tQuestions" rows="5" placeholder="Captured live in the meeting…"></textarea>
+          <textarea id="tQuestions" rows="5" placeholder="Captured live in the meeting…" oninput="scheduleProfileSave()"></textarea>
         </aside>
         <aside class="tprod-note tqa-note">
           <span class="tprod-fold"></span>
           <div class="tprod-note-k">Answered here / to follow up</div>
-          <textarea id="tAnswers" rows="5" placeholder="What was answered, and what XVET sends afterwards…"></textarea>
+          <textarea id="tAnswers" rows="5" placeholder="What was answered, and what XVET sends afterwards…" oninput="scheduleProfileSave()"></textarea>
         </aside>
       </div>
       <div class="notebox" style="margin-top:14px">
@@ -2883,6 +2931,7 @@ body.presenting .internal-only{display:none}
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="data/product_scoring_embed.js"></script>
 <script src="data/product_challenges_embed.js"></script>
 <script src="product-data.js"></script>
@@ -4320,6 +4369,12 @@ const COUNTRY_PRODUCT_STATUS={
     'novovital':'UNAVAILABLE',
     'aromax':'UNAVAILABLE',
     'metavolin-herbal':'UNAVAILABLE'
+  },
+  /* Ukraine — already sold in-market. */
+  ukraine:{
+    'cal-d-phos':'UNAVAILABLE',
+    'turbo-fluid':'UNAVAILABLE',
+    'mineral-forte':'UNAVAILABLE'
   }
 };
 
@@ -5596,7 +5651,10 @@ function syncTechPrep(){
   if(g('tmPvCust')) g('tmPvCust').textContent=
     custAttendees().map(a=>[a.name,a.role].filter(Boolean).join(' \u2013 ')).join(', ')||'\u2014';
   if(g('tmPvDocs')) g('tmPvDocs').textContent=activeRegDocs().join(', ')||'\u2014';
+  state.techDate=g('tmDate')?.value||'';
+  state.techTime=g('tmTime')?.value||'';
   renderTechAgendaBits();
+  if(typeof scheduleProfileSave==='function') scheduleProfileSave();
 }
 
 function attendeeCompanyName(){
@@ -6427,8 +6485,8 @@ function renderProcessSteps(hostId, current){
       extra = editTech
         ? `<div class="meetfix">
              <span class="meetfix-label">Let us fix the date now</span>
-             <input type="date" id="secondMeetingDate" onchange="state.meetDate=this.value;renderSummary()">
-             <input type="time" id="secondMeetingTime" onchange="state.meetTime=this.value;renderSummary()">
+             <input type="date" id="secondMeetingDate" onchange="state.meetDate=this.value;renderSummary();scheduleProfileSave()">
+             <input type="time" id="secondMeetingTime" onchange="state.meetTime=this.value;renderSummary();scheduleProfileSave()">
              <span class="meetfix-team">${st.team}</span>
            </div>
            <div class="internal-note">Internal &mdash; not for the customer: deposit request and further commercial
@@ -6770,8 +6828,162 @@ function demoSet(id,val){ const el=document.getElementById(id); if(el && val!=nu
 
 const SAVED_PROFILES_KEY='xvetSavedProfiles';
 const ACTIVE_PROFILE_KEY='xvetActiveProfile';
+const SUPABASE_URL='https://dpjxhnurpafxbgicivsi.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwanhobnVycGFmeGJnaWNpdnNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NTIxMjAsImV4cCI6MjEwNTEyODEyMH0.46CeSVOq000UAwatra6EoLbPQk-BH8fJb2w6pWrKWFo';
+const xvetSb=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+  auth:{flowType:'implicit',detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}
+}):null;
+let sbUser=null;
+let cloudWorkshops=[];
+
+function isCloudId(id){
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(id||''));
+}
+function emptyToNull(v){
+  const s=String(v||'').trim();
+  return s?s:null;
+}
+function workshopRedirectUrl(){
+  try{
+    const u=new URL(window.location.href);
+    return u.origin+u.pathname;
+  }catch(_){
+    return String(window.location.href||'').split('#')[0].split('?')[0];
+  }
+}
+function isXvetEmail(email){
+  const domain=String(email||'').trim().toLowerCase().split('@').pop()||'';
+  return domain==='xvetgermany.com' || domain.endsWith('.xvetgermany.com');
+}
+function setAuthMsg(text, ok){
+  const el=document.getElementById('authErr');
+  if(!el) return;
+  el.textContent=text||'';
+  el.classList.toggle('ok', !!ok);
+}
+function paintAuthGate(){
+  const inCloud=!!sbUser;
+  document.body.classList.toggle('authed', inCloud);
+  const out=document.getElementById('topSignOut');
+  if(out) out.textContent=inCloud?(sbUser.email?`Sign out · ${sbUser.email}`:'Sign out'):'Sign out';
+}
+function resetAuthForm(){
+  const fields=document.getElementById('authFields');
+  const sent=document.getElementById('authSent');
+  if(fields) fields.hidden=false;
+  if(sent) sent.hidden=true;
+  const submit=document.getElementById('authSubmit');
+  if(submit){ submit.disabled=false; submit.hidden=false; }
+  setAuthMsg('');
+}
+function clearAuthHash(){
+  if(!location.hash) return;
+  if(/access_token|refresh_token|error_description/.test(location.hash)){
+    history.replaceState({},document.title,location.pathname+location.search);
+  }
+}
+async function sendSignInLink(email){
+  const redirectTo=workshopRedirectUrl();
+  const {data, error}=await xvetSb.functions.invoke('request-auth-code',{
+    body:{email, redirectTo}
+  });
+  let payload=data;
+  if(!payload && error?.context){
+    try{ payload=await error.context.json(); }catch(_){ payload=null; }
+  }
+  payload=payload||{};
+  if(payload.error) throw new Error(payload.error);
+  if(error) throw new Error(error.message||'Could not complete sign-in.');
+  const access=payload.session?.access_token;
+  const refresh=payload.session?.refresh_token;
+  if(access && refresh){
+    const {error: sessErr}=await xvetSb.auth.setSession({
+      access_token:access,
+      refresh_token:refresh
+    });
+    if(sessErr) throw sessErr;
+    return {ok:true, signedIn:true};
+  }
+  return payload;
+}
+async function submitAuthForm(){
+  if(!xvetSb){ setAuthMsg('Cloud sign-in is not available.'); return; }
+  const email=document.getElementById('authEmail')?.value.trim().toLowerCase()||'';
+  if(!isXvetEmail(email)){
+    setAuthMsg('Only @xvetgermany.com emails can be used.');
+    return;
+  }
+  const submit=document.getElementById('authSubmit');
+  if(submit) submit.disabled=true;
+  try{
+    const result=await sendSignInLink(email);
+    if(result?.signedIn){
+      setAuthMsg('');
+      return;
+    }
+  }catch(e){
+    setAuthMsg(e.message||'Could not complete sign-in.');
+    if(submit) submit.disabled=false;
+    return;
+  }
+  const sentEmail=document.getElementById('authSentEmail');
+  if(sentEmail) sentEmail.textContent=email;
+  document.getElementById('authFields').hidden=true;
+  document.getElementById('authSent').hidden=false;
+  setAuthMsg('');
+}
+async function cloudSignOut(){
+  if(!xvetSb) return;
+  await xvetSb.auth.signOut();
+  resetAuthForm();
+  setAuthMsg('Signed out.');
+}
+async function initCloud(){
+  if(!xvetSb){ paintAuthGate(); return; }
+  const {data}=await xvetSb.auth.getSession();
+  sbUser=data.session?.user||null;
+  clearAuthHash();
+  if(sbUser){
+    await ensureCloudProfile();
+    await refreshCloudWorkshops();
+  }
+  paintAuthGate();
+  xvetSb.auth.onAuthStateChange(async (_event, session)=>{
+    sbUser=session?.user||null;
+    clearAuthHash();
+    if(sbUser){
+      await ensureCloudProfile();
+      await refreshCloudWorkshops();
+    }else cloudWorkshops=[];
+    paintAuthGate();
+    if(typeof refreshProfilePicker==='function') refreshProfilePicker();
+  });
+}
+async function ensureCloudProfile(){
+  if(!xvetSb || !sbUser) return;
+  const {error}=await xvetSb.from('profiles').upsert({
+    id:sbUser.id,
+    email:sbUser.email||'',
+    full_name:sbUser.user_metadata?.full_name||''
+  });
+  if(error) console.warn(error);
+}
+async function refreshCloudWorkshops(){
+  if(!xvetSb || !sbUser){ cloudWorkshops=[]; return; }
+  const {data,error}=await xvetSb.from('workshops')
+    .select('id, company, country, contact_name, data, updated_at')
+    .order('updated_at',{ascending:false});
+  if(error){ console.warn(error); cloudWorkshops=[]; return; }
+  cloudWorkshops=(data||[]).map(row=>({
+    id:row.id,
+    name:row.company || row.data?.company || 'New profile',
+    updatedAt:row.updated_at?Date.parse(row.updated_at):0,
+    data:row.data||{}
+  }));
+}
 
 function readSavedProfiles(){
+  if(sbUser) return cloudWorkshops;
   try{
     const raw=localStorage.getItem(SAVED_PROFILES_KEY);
     const list=raw?JSON.parse(raw):[];
@@ -6802,6 +7014,10 @@ function blankCustomerSnapshot(){
     partnerTeam:[], cust:[{name:'',role:''}], xvet:[{name:'',role:''}],
     vet:'', am:'', authority:'', regNotes:'',
     moq:'', territory:'', validity:'', workshopDate:demoDate(0),
+    meetDate:'', meetTime:'',
+    techDate:'', techTime:'',
+    techQuestions:'', techAnswers:'',
+    selected:[], pairings:[], added:[],
     commDate:'', commTime:'',
     prodNotes:{}, offerAgreed:'',
     drip:null
@@ -6839,6 +7055,12 @@ function captureWorkshopSnapshot(){
     authority:g('tmAuthority'), regNotes:g('tmRegNotes'),
     moq:g('ofMoq'), territory:g('ofTerritory'), validity:g('ofValidity'),
     workshopDate:g('pcDate'),
+    meetDate:state.meetDate||g('secondMeetingDate'),
+    meetTime:state.meetTime||g('secondMeetingTime'),
+    techDate:state.techDate||g('tmDate'),
+    techTime:state.techTime||g('tmTime'),
+    techQuestions:g('tQuestions'),
+    techAnswers:g('tAnswers'),
     selected:[...(state.selected||[])],
     pairings:JSON.parse(JSON.stringify(state.pairings||[])),
     added:[...(state.added||[])],
@@ -6857,7 +7079,7 @@ function refreshProfilePicker(){
     `<option value="demo:${i}">${escapeHtml([d.company,d.country].filter(Boolean).join(' · '))}</option>`).join('');
   const saved=readSavedProfiles().slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
   const savedOpts=saved.length
-    ? `<optgroup label="Saved profiles">${saved.map(p=>
+    ? `<optgroup label="${sbUser?'Team profiles':'Saved profiles'}">${saved.map(p=>
         `<option value="saved:${p.id}">${escapeHtml(p.name||'New profile')}</option>`).join('')}</optgroup>`
     : '';
   sel.innerHTML=`<optgroup label="Test customers">${demoOpts}</optgroup>${savedOpts}`;
@@ -6872,11 +7094,33 @@ function scheduleProfileSave(){
 }
 function persistActiveProfile(){
   if(!state.activeSavedId || applyingProfile) return;
+  const snap=captureWorkshopSnapshot();
+  const name=(snap.company||'').trim()||'New profile';
+  if(sbUser && xvetSb && isCloudId(state.activeSavedId)){
+    xvetSb.from('workshops').update({
+      company:name,
+      country:emptyToNull(snap.country),
+      contact_name:emptyToNull(snap.contact||snap.sales),
+      intro_next_meeting_date:emptyToNull(snap.meetDate),
+      tech_meeting_date:emptyToNull(snap.techDate),
+      data:snap,
+      updated_at:new Date().toISOString()
+    }).eq('id', state.activeSavedId).then(({error})=>{
+      if(error){ console.warn(error); demoToast('Could not save to the database.'); return; }
+      const rec=cloudWorkshops.find(p=>p.id===state.activeSavedId);
+      if(rec){ rec.data=snap; rec.name=name; rec.updatedAt=Date.now(); }
+      const sel=document.getElementById('demoPick');
+      const opt=sel && [...sel.options].find(o=>o.value===`saved:${state.activeSavedId}`);
+      if(opt) opt.textContent=name;
+      else refreshProfilePicker();
+    });
+    return;
+  }
   const list=readSavedProfiles();
   const rec=list.find(p=>p.id===state.activeSavedId);
   if(!rec) return;
-  rec.data=captureWorkshopSnapshot();
-  rec.name=(rec.data.company||'').trim()||'New profile';
+  rec.data=snap;
+  rec.name=name;
   rec.updatedAt=Date.now();
   writeSavedProfiles(list);
   const sel=document.getElementById('demoPick');
@@ -7000,6 +7244,14 @@ function applyCustomerSnapshotInner(d){
   state.offerAgreed=d.offerAgreed||'';
   demoSet('ofAgreed',d.offerAgreed||'');
   if(typeof applyDripSnapshot==='function') applyDripSnapshot(d.drip);
+  state.meetDate=d.meetDate||'';
+  state.meetTime=d.meetTime||'';
+  state.techDate=d.techDate||d.meetDate||'';
+  state.techTime=d.techTime||d.meetTime||'';
+  demoSet('tmDate',state.techDate);
+  demoSet('tmTime',state.techTime);
+  demoSet('tQuestions',d.techQuestions||'');
+  demoSet('tAnswers',d.techAnswers||'');
 }
 function loadDemo(){
   persistActiveProfile();
@@ -7063,8 +7315,29 @@ function loadDemo(){
   demoToast(`Test customer loaded: ${d.company}`);
 }
 
-function newSavedProfile(){
+async function newSavedProfile(){
   persistActiveProfile();
+  if(sbUser && xvetSb){
+    await ensureCloudProfile();
+    const blank=blankCustomerSnapshot();
+    const {data,error}=await xvetSb.from('workshops').insert({
+      created_by:sbUser.id,
+      company:'New profile',
+      country:null,
+      contact_name:null,
+      data:blank
+    }).select('id').single();
+    if(error){ demoToast(error.message); return; }
+    state.activeSavedId=data.id;
+    setActiveProfileKey('saved:'+data.id);
+    applyCustomerSnapshot(blank);
+    await refreshCloudWorkshops();
+    refreshProfilePicker();
+    const active=screens.findIndex(x=>x.classList.contains('active'));
+    if(active>-1) go(active);
+    demoToast('New profile — saving to the team database');
+    return;
+  }
   const rec={
     id:'p'+Date.now().toString(36),
     name:'New profile',
@@ -8119,6 +8392,7 @@ INTERNAL NOTE (do not send): deposit request and further commercial conditions p
    ======================================================================= */
 (async function boot(){
   await Promise.all([loadFAOSTAT(),loadFieldTrialsCSV(),loadProductScoringCSV(),loadProductLabels()]);
+  await initCloud();
   initSupportCards();
   initPrep();
   let skipDemo=false;
